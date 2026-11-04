@@ -1,77 +1,88 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Habit, NewHabit } from "../types/habit";
-import { loadHabits, saveHabits } from "../lib/storage";
+import * as api from "../lib/api";
 import { todayKey } from "../lib/date";
 
 export function useHabits() {
-  const [habits, setHabits] = useState<Habit[]>(() => loadHabits());
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // При монтировании компонента загружаем данные с бэкенда
   useEffect(() => {
-    saveHabits(habits);
-  }, [habits]);
-
-  const addHabit = useCallback((data: NewHabit): Habit => {
-    const habit: Habit = {
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      completedDates: [],
-      ...data,
-    };
-    setHabits((prev) => [...prev, habit]);
-    return habit;
+    api
+      .fetchHabits()
+      .then((data) => setHabits(data))
+      .catch((err) => console.error(err))
+      .finally(() => setLoading(false));
   }, []);
 
-  const removeHabit = useCallback((id: string) => {
-    setHabits((prev) => prev.filter((h) => h.id !== id));
+  const addHabit = useCallback(async (data: NewHabit) => {
+    try {
+      const newHabit = await api.createHabit(data);
+      setHabits((prev) => [...prev, newHabit]);
+    } catch (err) {
+      console.error(err);
+    }
   }, []);
 
-  const updateHabit = useCallback((id: string, data: NewHabit) => {
-    setHabits((prev) => prev.map((h) => (h.id === id ? { ...h, ...data } : h)));
+  const removeHabit = useCallback(async (id: string) => {
+    try {
+      await api.deleteHabit(id);
+      setHabits((prev) => prev.filter((h) => h.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
   }, []);
 
-  const toggleToday = useCallback((id: string) => {
-    const today = todayKey();
-    setHabits((prev) =>
-      prev.map((h) => {
-        if (h.id !== id) return h;
-        const done = h.completedDates.includes(today);
-        return {
-          ...h,
-          completedDates: done
-            ? h.completedDates.filter((d) => d !== today)
-            : [...h.completedDates, today],
-        };
-      }),
-    );
+  const updateHabit = useCallback(async (id: string, data: NewHabit) => {
+    try {
+      const updated = await api.updateHabit(id, data);
+      setHabits((prev) => prev.map((h) => (h.id === id ? updated : h)));
+    } catch (err) {
+      console.error(err);
+    }
   }, []);
 
-  const toggleDate = useCallback((id: string, date: string) => {
-    setHabits((prev) =>
-      prev.map((h) => {
-        if (h.id !== id) return h;
-        const done = h.completedDates.includes(date);
-        return {
-          ...h,
-          completedDates: done
-            ? h.completedDates.filter((d) => d !== date)
-            : [...h.completedDates, date],
-        };
-      }),
-    );
-  }, []);
+  const toggleDate = useCallback(
+    async (id: string, date: string) => {
+      const habit = habits.find((h) => h.id === id);
+      if (!habit) return;
+
+      const done = habit.completedDates.includes(date);
+      const newDates = done
+        ? habit.completedDates.filter((d) => d !== date)
+        : [...habit.completedDates, date];
+
+      try {
+        const updated = await api.updateHabit(id, { completedDates: newDates });
+        setHabits((prev) => prev.map((h) => (h.id === id ? updated : h)));
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    [habits],
+  ); // Зависимость от habits, так как мы ищем в них привычку
+
+  const toggleToday = useCallback(
+    (id: string) => {
+      toggleDate(id, todayKey());
+    },
+    [toggleDate],
+  );
 
   const importHabits = useCallback((imported: Habit[]) => {
-    // Простая защита: заменяем текущие данные на импортированные
+    // Временная заглушка, так как импорт JSON мы переделаем позже под базу данных
     setHabits(imported);
   }, []);
 
   return {
     habits,
+    loading,
     addHabit,
     removeHabit,
+    toggleDate,
     toggleToday,
     updateHabit,
     importHabits,
-    toggleDate,
   };
 }

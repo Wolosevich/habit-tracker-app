@@ -5,7 +5,10 @@ import { prisma } from "./db.js";
 const fastify = Fastify({
   logger: true,
 });
-fastify.register(cors, { origin: true });
+fastify.register(cors, {
+  origin: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+});
 
 // Тестовый маршрут (оставляем для проверки)
 fastify.get("/api/health", async () => {
@@ -56,5 +59,37 @@ const start = async () => {
     process.exit(1);
   }
 };
+// МАРШРУТ: Удаление привычки
+fastify.delete("/api/habits/:id", async (request, reply) => {
+  const { id } = request.params as { id: string };
+
+  try {
+    await prisma.habit.delete({ where: { id } });
+    return { success: true };
+  } catch (error) {
+    return reply.status(404).send({ error: "Привычка не найдена" });
+  }
+});
+
+// МАРШРУТ: Обновление привычки (название, цвет или отметки)
+fastify.put("/api/habits/:id", async (request, reply) => {
+  const { id } = request.params as { id: string };
+  const body = request.body as {
+    name?: string;
+    description?: string;
+    color?: string;
+    completedDates?: string[];
+  };
+
+  try {
+    const updatedHabit = await prisma.habit.update({
+      where: { id },
+      data: body,
+    });
+    return updatedHabit;
+  } catch (error) {
+    return reply.status(404).send({ error: "Привычка не найдена" });
+  }
+});
 
 start();

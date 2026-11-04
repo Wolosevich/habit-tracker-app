@@ -18,6 +18,8 @@ import {
   Tooltip,
   useMantineColorScheme,
   useComputedColorScheme,
+  Loader,
+  Center,
 } from "@mantine/core";
 import {
   IconDownload,
@@ -91,6 +93,7 @@ function ThemeToggle() {
 function AppContent() {
   const {
     habits,
+    loading,
     addHabit,
     removeHabit,
     toggleToday,
@@ -194,7 +197,11 @@ function AppContent() {
       <Divider my="xl" />
 
       <Stack>
-        {habits.length === 0 ? (
+        {loading ? (
+          <Center py="xl">
+            <Loader color="blue" />
+          </Center>
+        ) : habits.length === 0 ? (
           <Text c="dimmed" ta="center">
             Пока нет привычек. Добавьте первую!
           </Text>
