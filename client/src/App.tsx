@@ -1,6 +1,4 @@
-import { useState, useRef, useEffect } from "react";
-import { fetchHabits } from "./lib/api";
-import { MonthCalendar } from "./components/MonthCalendar";
+import { useState, useRef } from "react";
 import "@mantine/core/styles.css";
 import {
   MantineProvider,
@@ -27,51 +25,48 @@ import {
   IconSun,
   IconMoon,
 } from "@tabler/icons-react";
+import { useTranslation, Trans } from "react-i18next";
 import { downloadHabits, readHabitsFromFile } from "./lib/backup";
 import { useHabits } from "./hooks/useHabits";
 import { HabitForm } from "./components/HabitForm";
 import { HabitCard } from "./components/HabitCard";
+import { MonthCalendar } from "./components/MonthCalendar";
 import type { Habit, NewHabit } from "./types/habit";
 
 const theme = createTheme({
   colors: {
-    // Переопределяем стандартную тёмную палитру Mantine на цвета Telegram
     dark: [
-      "#f5f5f5", // 0 - основной текст
-      "#e0e0e0", // 1
-      "#c2c2c2", // 2
-      "#a3a3a3", // 3 - текст с c="dimmed" (приглушенный)
-      "#858585", // 4
-      "#708499", // 5 - текст в placeholder
-      "#232e3c", // 6 - фон карточек (Paper, Card) и инпутов
-      "#17212b", // 7 - ОСНОВНОЙ ФОН страницы (как в Telegram)
-      "#0e1621", // 8 - более темный фон (тени, разделители)
-      "#080c11", // 9
+      "#f5f5f5",
+      "#e0e0e0",
+      "#c2c2c2",
+      "#a3a3a3",
+      "#858585",
+      "#708499",
+      "#232e3c",
+      "#17212b",
+      "#0e1621",
+      "#080c11",
     ],
   },
-  primaryColor: "blue", // Оставляем синий для акцентов (кнопок, галочек)
+  primaryColor: "blue",
 });
 
 export default function App() {
   return (
-    // defaultColorScheme="auto" позволяет при первом запуске
-    // подхватить тему из настроек операционной системы пользователя
     <MantineProvider theme={theme} defaultColorScheme="auto">
       <AppContent />
     </MantineProvider>
   );
 }
 
-// Выносим кнопку переключения темы в отдельный маленький компонент
 function ThemeToggle() {
   const { setColorScheme } = useMantineColorScheme();
-  // useComputedColorScheme нужен, чтобы понять, какая тема сейчас реально активна
   const computedColorScheme = useComputedColorScheme("light", {
     getInitialValueInEffect: true,
   });
 
   return (
-    <Tooltip label="Переключить тему">
+    <Tooltip label="Тема / Theme">
       <ActionIcon
         variant="default"
         size="lg"
@@ -90,7 +85,32 @@ function ThemeToggle() {
   );
 }
 
+// 👇 НОВЫЙ КОМПОНЕНТ ДЛЯ ПЕРЕКЛЮЧЕНИЯ ЯЗЫКА 👇
+function LanguageToggle() {
+  const { i18n } = useTranslation();
+  const isRu = i18n.language === "ru";
+
+  const toggleLanguage = () => {
+    const newLang = isRu ? "en" : "ru";
+    i18n.changeLanguage(newLang);
+    localStorage.setItem("appLanguage", newLang);
+  };
+
+  return (
+    <Button
+      variant="default"
+      size="compact-md"
+      onClick={toggleLanguage}
+      px="xs"
+      fw={600}
+    >
+      {isRu ? "EN" : "RU"}
+    </Button>
+  );
+}
+
 function AppContent() {
+  const { t } = useTranslation(); // 👈 Подключаем функцию перевода
   const {
     habits,
     loading,
@@ -104,22 +124,9 @@ function AppContent() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ВРЕМЕННЫЙ ЭФФЕКТ ДЛЯ ПРОВЕРКИ СВЯЗИ С БЭКЕНДОМ
-  useEffect(() => {
-    fetchHabits()
-      .then((data) => {
-        console.log("Успех! Данные с бэкенда:", data);
-      })
-      .catch((err) => {
-        console.error("Ошибка связи с бэкендом:", err);
-      });
-  }, []);
-
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [deletingHabit, setDeletingHabit] = useState<Habit | null>(null);
   const [calendarHabitId, setCalendarHabitId] = useState<string | null>(null);
-
-  // Всегда находим актуальную привычку по ID из свежего списка habits
   const calendarHabit = habits.find((h) => h.id === calendarHabitId) || null;
 
   const handleUpdate = (data: NewHabit) => {
@@ -143,7 +150,7 @@ function AppContent() {
     try {
       const imported = await readHabitsFromFile(file);
       importHabits(imported);
-      alert("Данные успешно загружены!");
+      alert("Данные успешно загружены! / Data loaded successfully!");
     } catch (err) {
       alert((err as Error).message);
     } finally {
@@ -153,16 +160,16 @@ function AppContent() {
 
   return (
     <Container size="sm" py="xl">
-      {/* Шапка */}
       <Group justify="space-between" align="flex-end" mt="sm" mb="lg">
         <div>
-          <Title order={1}>Трекер привычек</Title>
+          <Title order={1}>{t("appTitle")}</Title>
           <Text c="dimmed" mt="sm">
-            Отслеживайте свои ежедневные привычки.
+            {t("appSubtitle")}
           </Text>
         </div>
 
         <Group gap="xs">
+          <LanguageToggle />
           <ThemeToggle />
           <Button
             variant="light"
@@ -170,7 +177,7 @@ function AppContent() {
             leftSection={<IconDownload size={16} />}
             onClick={() => downloadHabits(habits)}
           >
-            Экспорт
+            {t("export")}
           </Button>
           <Button
             variant="light"
@@ -178,7 +185,7 @@ function AppContent() {
             leftSection={<IconUpload size={16} />}
             onClick={() => fileInputRef.current?.click()}
           >
-            Импорт
+            {t("import")}
           </Button>
           <input
             type="file"
@@ -203,7 +210,7 @@ function AppContent() {
           </Center>
         ) : habits.length === 0 ? (
           <Text c="dimmed" ta="center">
-            Пока нет привычек. Добавьте первую!
+            {t("emptyState")}
           </Text>
         ) : (
           habits.map((habit) => (
@@ -222,12 +229,12 @@ function AppContent() {
       <Modal
         opened={!!editingHabit}
         onClose={() => setEditingHabit(null)}
-        title="Редактировать привычку"
+        title={t("editHabit")}
       >
         {editingHabit && (
           <HabitForm
             initialValues={editingHabit}
-            submitLabel="Сохранить изменения"
+            submitLabel={t("saveChanges")}
             onSubmit={handleUpdate}
           />
         )}
@@ -236,27 +243,31 @@ function AppContent() {
       <Modal
         opened={!!deletingHabit}
         onClose={() => setDeletingHabit(null)}
-        title="Удалить привычку?"
+        title={t("deleteHabit")}
         size="sm"
       >
         <Text mb="lg">
-          Вы уверены, что хотите удалить <b>{deletingHabit?.name}</b>? Вся
-          история отметок будет потеряна.
+          {/* Используем Trans, так как внутри перевода есть тег <b> */}
+          <Trans
+            i18nKey="deleteConfirm"
+            values={{ name: deletingHabit?.name }}
+            components={{ b: <b /> }}
+          />
         </Text>
         <Group justify="flex-end">
           <Button variant="default" onClick={() => setDeletingHabit(null)}>
-            Отмена
+            {t("cancel")}
           </Button>
           <Button color="red" onClick={handleConfirmDelete}>
-            Удалить
+            {t("delete")}
           </Button>
         </Group>
       </Modal>
-      {/* Модалка календаря */}
+
       <Modal
         opened={!!calendarHabitId}
         onClose={() => setCalendarHabitId(null)}
-        title={`Календарь: ${calendarHabit?.name || ""}`}
+        title={t("calendar", { name: calendarHabit?.name || "" })}
         size="md"
       >
         {calendarHabit && (

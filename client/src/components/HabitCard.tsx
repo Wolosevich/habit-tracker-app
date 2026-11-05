@@ -15,16 +15,9 @@ import {
   IconPencil,
   IconCalendar,
 } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 import { todayKey, lastNDays, calculateStreak } from "../lib/date";
 import type { Habit } from "../types/habit";
-
-const DAY_LETTERS = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
-
-function dayLetterOf(dateKey: string): string {
-  // 'T00:00:00' — чтобы дата парсилась в локальной зоне, а не UTC
-  const d = new Date(`${dateKey}T00:00:00`);
-  return DAY_LETTERS[d.getDay()];
-}
 
 interface HabitCardProps {
   habit: Habit;
@@ -41,10 +34,20 @@ export function HabitCard({
   onEdit,
   onShowCalendar,
 }: HabitCardProps) {
+  const { t, i18n } = useTranslation(); // 👈 Подключаем перевод и текущий язык
+
   const today = todayKey();
   const doneToday = habit.completedDates.includes(today);
   const week = lastNDays(7);
   const streak = calculateStreak(habit.completedDates);
+
+  // 👇 Встроенная функция для перевода дней недели (Пн -> Mon) 👇
+  const getDayLetter = (dateKey: string) => {
+    const date = new Date(`${dateKey}T00:00:00`);
+    return new Intl.DateTimeFormat(i18n.language, { weekday: "short" }).format(
+      date,
+    );
+  };
 
   return (
     <Card withBorder shadow="sm" radius="md" padding="md">
@@ -59,19 +62,20 @@ export function HabitCard({
 
           <Group gap="xs" mt="xs">
             <Badge color={habit.color} variant={doneToday ? "filled" : "light"}>
-              {doneToday ? "Сегодня готово" : "Не отмечено"}
+              {doneToday ? t("doneToday") : t("notDone")}
             </Badge>
+
             <Badge variant="default">
-              Всего: {habit.completedDates.length} дн.
+              {t("totalDays", { count: habit.completedDates.length })}
             </Badge>
-            {/* НОВЫЙ БЕЙДЖ */}
+
             {streak > 0 && (
               <Badge
                 variant="light"
                 color="orange"
                 leftSection={<IconFlame size={12} />}
               >
-                {streak} дн. подряд
+                {t("streak", { count: streak })}
               </Badge>
             )}
           </Group>
@@ -83,7 +87,7 @@ export function HabitCard({
               return (
                 <Stack key={dateKey} gap={2} align="center">
                   <Text size="xs" c="dimmed">
-                    {dayLetterOf(dateKey)}
+                    {getDayLetter(dateKey)}
                   </Text>
                   <Tooltip label={dateKey} withArrow>
                     <Box
@@ -114,7 +118,7 @@ export function HabitCard({
             size="lg"
             radius="xl"
             onClick={() => onToggleToday(habit.id)}
-            aria-label={doneToday ? "Отменить отметку" : "Отметить выполнение"}
+            aria-label={doneToday ? "Undo" : "Done"}
           >
             <IconCheck size={18} />
           </ActionIcon>
@@ -124,27 +128,27 @@ export function HabitCard({
             variant="subtle"
             size="lg"
             onClick={() => onShowCalendar(habit)}
-            aria-label="Календарь привычки"
+            aria-label="Calendar"
           >
             <IconCalendar size={18} />
           </ActionIcon>
 
-          {/* НОВАЯ КНОПКА */}
           <ActionIcon
             color="blue"
             variant="subtle"
             size="lg"
             onClick={() => onEdit(habit)}
-            aria-label="Редактировать привычку"
+            aria-label="Edit"
           >
             <IconPencil size={18} />
           </ActionIcon>
+
           <ActionIcon
             color="red"
             variant="subtle"
             size="lg"
             onClick={() => onRemove(habit.id)}
-            aria-label="Удалить привычку"
+            aria-label="Delete"
           >
             <IconTrash size={18} />
           </ActionIcon>

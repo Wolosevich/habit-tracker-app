@@ -1,8 +1,7 @@
 import { SimpleGrid, Box, Tooltip, Text, Stack } from "@mantine/core";
+import { useTranslation } from "react-i18next"; // 👈 Подключаем перевод
 import { getCurrentMonthDays, todayKey } from "../lib/date";
 import type { Habit } from "../types/habit";
-
-const DAY_NAMES = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"];
 
 interface MonthCalendarProps {
   habit: Habit;
@@ -10,14 +9,33 @@ interface MonthCalendarProps {
 }
 
 export function MonthCalendar({ habit, onToggleDate }: MonthCalendarProps) {
+  const { i18n } = useTranslation(); // 👈 Получаем текущий язык
   const today = todayKey();
   const days = getCurrentMonthDays();
+
+  // 👇 Генерируем названия дней недели на нужном языке 👇
+  const getWeekdayHeaders = () => {
+    const monday = new Date("2024-01-01T00:00:00"); // Берем за основу понедельник
+    const headers = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + i);
+      headers.push(
+        new Intl.DateTimeFormat(i18n.language, { weekday: "short" }).format(
+          date,
+        ),
+      );
+    }
+    return headers;
+  };
+
+  const dayHeaders = getWeekdayHeaders();
 
   return (
     <Stack gap="xs">
       {/* Шапка календаря с днями недели */}
       <SimpleGrid cols={7} spacing="xs">
-        {DAY_NAMES.map((day) => (
+        {dayHeaders.map((day) => (
           <Text key={day} size="xs" c="dimmed" ta="center" fw={500}>
             {day}
           </Text>
@@ -28,7 +46,6 @@ export function MonthCalendar({ habit, onToggleDate }: MonthCalendarProps) {
       <SimpleGrid cols={7} spacing="xs">
         {days.map((dateKey, index) => {
           if (!dateKey) {
-            // Пустая клетка в начале месяца
             return <Box key={`empty-${index}`} />;
           }
 
@@ -50,10 +67,10 @@ export function MonthCalendar({ habit, onToggleDate }: MonthCalendarProps) {
                   userSelect: "none",
                   fontWeight: 500,
                   fontSize: 14,
-                  outline: "none", // Убираем рамку фокуса при клике
+                  outline: "none",
                   background: done
                     ? `var(--mantine-color-${habit.color}-6)`
-                    : "var(--mantine-color-default)", // Mantine сам подберет правильный серый/темный цвет
+                    : "var(--mantine-color-default)",
                   color: done ? "white" : "inherit",
                   border: isToday
                     ? "2px solid var(--mantine-color-blue-6)"

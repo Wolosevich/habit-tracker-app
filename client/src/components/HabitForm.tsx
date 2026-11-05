@@ -9,6 +9,7 @@ import {
   Tooltip,
   Text,
 } from "@mantine/core";
+import { useTranslation } from "react-i18next";
 import type { NewHabit } from "../types/habit";
 
 const COLORS = [
@@ -30,9 +31,10 @@ interface HabitFormProps {
 
 export function HabitForm({
   initialValues,
-  submitLabel = "Добавить привычку",
+  submitLabel,
   onSubmit,
 }: HabitFormProps) {
+  const { t } = useTranslation(); // 👈 Подключаем перевод
   const [name, setName] = useState(initialValues?.name || "");
   const [description, setDescription] = useState(
     initialValues?.description || "",
@@ -59,16 +61,16 @@ export function HabitForm({
     <form onSubmit={handleSubmit}>
       <Stack>
         <TextInput
-          label="Название"
-          placeholder="Например, Читать 20 минут"
+          label={t("nameLabel")}
+          placeholder={t("namePlaceholder")}
           value={name}
           onChange={(e) => setName(e.currentTarget.value)}
           required
           autoFocus
         />
         <Textarea
-          label="Описание (необязательно)"
-          placeholder="Зачем вам эта привычка?"
+          label={t("descriptionLabel")}
+          placeholder={t("descriptionPlaceholder")}
           value={description}
           onChange={(e) => setDescription(e.currentTarget.value)}
           autosize
@@ -76,7 +78,7 @@ export function HabitForm({
         />
         <Group gap="xs" align="center">
           <Text size="sm" fw={500}>
-            Цвет:
+            {t("colorLabel")}
           </Text>
           {COLORS.map((c) => (
             <Tooltip key={c} label={c}>
@@ -95,8 +97,9 @@ export function HabitForm({
             </Tooltip>
           ))}
         </Group>
+        {/* Если submitLabel не передан, используем перевод по умолчанию */}
         <Button type="submit" disabled={!name.trim()}>
-          {submitLabel}
+          {submitLabel || t("addHabit")}
         </Button>
       </Stack>
     </form>

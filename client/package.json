@@ -13,8 +13,10 @@
     "@mantine/core": "^9.7.4",
     "@mantine/hooks": "^9.7.4",
     "@tabler/icons-react": "^3.50.0",
+    "i18next": "^26.7.2",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-i18next": "^17.1.13"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
