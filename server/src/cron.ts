@@ -5,7 +5,7 @@ import { webpush } from "./push.js";
 export function startCronJobs() {
   // Настраиваем расписание. Сейчас стоит тестовый режим: КАЖДУЮ МИНУТУ.
   // Позже мы поменяем его на раз в день (например, '0 20 * * *' — каждый день в 20:00).
-  cron.schedule("* * * * *", async () => {
+  cron.schedule("0 20 * * *", async () => {
     console.log("⏰ [Cron] Проверка привычек и отправка напоминаний...");
 
     try {

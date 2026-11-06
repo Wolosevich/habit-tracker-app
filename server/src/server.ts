@@ -46,6 +46,23 @@ fastify.post("/api/push/subscribe", async (request, reply) => {
   }
 });
 
+// Маршрут для удаления подписки
+fastify.delete("/api/push/unsubscribe", async (request, reply) => {
+  const { endpoint } = request.body as { endpoint: string };
+
+  if (!endpoint) {
+    return reply.status(400).send({ error: "Не передан endpoint" });
+  }
+
+  try {
+    // Используем deleteMany, чтобы не упасть с ошибкой, если записи вдруг нет
+    await prisma.pushSubscription.deleteMany({ where: { endpoint } });
+    return { success: true };
+  } catch (error) {
+    return reply.status(500).send({ error: "Ошибка удаления подписки" });
+  }
+});
+
 // Маршрут для тестовой отправки уведомлений
 fastify.post("/api/push/test", async (request, reply) => {
   try {

@@ -1,5 +1,9 @@
-import { useState, useRef } from "react";
-import { subscribeToPush } from "./lib/push";
+import { useState, useRef, useEffect } from "react";
+import {
+  subscribeToPush,
+  unsubscribeFromPush,
+  checkSubscription,
+} from "./lib/push";
 import "@mantine/core/styles.css";
 import {
   MantineProvider,
@@ -129,7 +133,23 @@ function AppContent() {
   const [deletingHabit, setDeletingHabit] = useState<Habit | null>(null);
   const [calendarHabitId, setCalendarHabitId] = useState<string | null>(null);
   const calendarHabit = habits.find((h) => h.id === calendarHabitId) || null;
+  const [isSubscribed, setIsSubscribed] = useState(false);
 
+  // Проверяем статус подписки при загрузке страницы
+  useEffect(() => {
+    checkSubscription().then(setIsSubscribed);
+  }, []);
+
+  // Обработчик клика
+  const handleToggleNotifications = async () => {
+    if (isSubscribed) {
+      await unsubscribeFromPush();
+      setIsSubscribed(false);
+    } else {
+      await subscribeToPush();
+      setIsSubscribed(true);
+    }
+  };
   const handleUpdate = (data: NewHabit) => {
     if (editingHabit) {
       updateHabit(editingHabit.id, data);
@@ -190,26 +210,14 @@ function AppContent() {
           </Button>
 
           <Button
-            variant="light"
-            color="teal"
+            variant={isSubscribed ? "outline" : "light"}
+            color={isSubscribed ? "gray" : "orange"}
             size="xs"
-            onClick={async () => {
-              await fetch("http://localhost:3001/api/push/test", {
-                method: "POST",
-              });
-              alert("Запрос на отправку уведомления отправлен!");
-            }}
+            onClick={handleToggleNotifications}
           >
-            🚀 Тест Push
-          </Button>
-
-          <Button
-            variant="light"
-            color="orange"
-            size="xs"
-            onClick={subscribeToPush}
-          >
-            🔔 Включить уведомления
+            {isSubscribed
+              ? "🔕 Отключить уведомления"
+              : "🔔 Включить уведомления"}
           </Button>
           <input
             type="file"

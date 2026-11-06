@@ -48,11 +48,38 @@ export async function subscribeToPush() {
       body: JSON.stringify(subscription),
     });
 
-    alert("Уведомления успешно включены и сохранены на сервере!");
+    //alert("Уведомления успешно включены и сохранены на сервере!");
 
     // Пока просто выведем в консоль. На следующем шаге мы отправим это на бэкенд.
-    alert("Уведомления успешно включены! (Проверьте консоль)");
+    //alert("Уведомления успешно включены! (Проверьте консоль)");
   } catch (err) {
     console.error("Ошибка при подписке на уведомления:", err);
+  }
+}
+export async function checkSubscription() {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window))
+    return false;
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.getSubscription();
+  return !!subscription;
+}
+export async function unsubscribeFromPush() {
+  try {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+
+    if (subscription) {
+      // 1. Отписываемся в браузере
+      await subscription.unsubscribe();
+
+      // 2. Сообщаем бэкенду, чтобы он удалил нас из базы
+      await fetch("http://localhost:3001/api/push/unsubscribe", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ endpoint: subscription.endpoint }),
+      });
+    }
+  } catch (err) {
+    console.error("Ошибка при отписке:", err);
   }
 }
