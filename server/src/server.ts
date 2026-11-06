@@ -1,6 +1,7 @@
 import cors from "@fastify/cors";
 import "dotenv/config";
 import Fastify from "fastify";
+import { startCronJobs } from "./cron.js";
 import { prisma } from "./db.js";
 import { webpush } from "./push.js";
 
@@ -124,6 +125,8 @@ fastify.post("/api/habits", async (request, reply) => {
   return newHabit;
 });
 
+// Запускаем фоновые задачи
+startCronJobs();
 // Запуск сервера
 const start = async () => {
   try {
