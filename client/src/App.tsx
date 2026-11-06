@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { subscribeToPush } from "./lib/push";
 import "@mantine/core/styles.css";
 import {
   MantineProvider,
@@ -186,6 +187,29 @@ function AppContent() {
             onClick={() => fileInputRef.current?.click()}
           >
             {t("import")}
+          </Button>
+
+          <Button
+            variant="light"
+            color="teal"
+            size="xs"
+            onClick={async () => {
+              await fetch("http://localhost:3001/api/push/test", {
+                method: "POST",
+              });
+              alert("Запрос на отправку уведомления отправлен!");
+            }}
+          >
+            🚀 Тест Push
+          </Button>
+
+          <Button
+            variant="light"
+            color="orange"
+            size="xs"
+            onClick={subscribeToPush}
+          >
+            🔔 Включить уведомления
           </Button>
           <input
             type="file"
