@@ -18,3 +18,10 @@ model Habit {
   // Массив строк для отметок (формат YYYY-MM-DD)
   completedDates String[] @default([])
 }
+model PushSubscription {
+  id        String   @id @default(uuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+}

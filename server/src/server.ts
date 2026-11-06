@@ -1,6 +1,8 @@
 import cors from "@fastify/cors";
+import "dotenv/config";
 import Fastify from "fastify";
 import { prisma } from "./db.js";
+import { webpush } from "./push.js";
 
 const fastify = Fastify({
   logger: true,
@@ -13,6 +15,79 @@ fastify.register(cors, {
 // Тестовый маршрут (оставляем для проверки)
 fastify.get("/api/health", async () => {
   return { status: "ok", message: "Бэкенд трекера привычек работает!" };
+});
+
+// Маршрут для получения публичного VAPID-ключа
+fastify.get("/api/push/vapid-public-key", async () => {
+  return { publicKey: process.env.VAPID_PUBLIC_KEY };
+});
+
+// Маршрут для сохранения подписки
+fastify.post("/api/push/subscribe", async (request, reply) => {
+  const body = request.body as any; // В идеале здесь нужна строгая типизация, но для MVP сойдет
+  const { endpoint, keys } = body;
+
+  if (!endpoint || !keys?.p256dh || !keys?.auth) {
+    return reply.status(400).send({ error: "Неверный формат подписки" });
+  }
+
+  try {
+    // Сохраняем или обновляем подписку (если такое устройство уже подписано)
+    await prisma.pushSubscription.upsert({
+      where: { endpoint },
+      update: { p256dh: keys.p256dh, auth: keys.auth },
+      create: { endpoint, p256dh: keys.p256dh, auth: keys.auth },
+    });
+    return { success: true };
+  } catch (error) {
+    fastify.log.error(error);
+    return reply.status(500).send({ error: "Ошибка сохранения подписки" });
+  }
+});
+
+// Маршрут для тестовой отправки уведомлений
+fastify.post("/api/push/test", async (request, reply) => {
+  try {
+    // 1. Получаем все подписки из базы
+    const subscriptions = await prisma.pushSubscription.findMany();
+
+    if (subscriptions.length === 0) {
+      return reply.status(404).send({ error: "Нет активных подписок" });
+    }
+
+    // 2. Формируем сообщение
+    const payload = JSON.stringify({
+      title: "Трекер привычек",
+      body: "Не забудьте выполнить свои привычки сегодня! 🔥",
+    });
+
+    // 3. Отправляем уведомление на каждое устройство
+    const sendPromises = subscriptions.map(async (sub) => {
+      try {
+        await webpush.sendNotification(
+          {
+            endpoint: sub.endpoint,
+            keys: { p256dh: sub.p256dh, auth: sub.auth },
+          },
+          payload,
+        );
+      } catch (error: any) {
+        // Если подписка устарела (ошибка 410), удаляем её из базы
+        if (error.statusCode === 410) {
+          await prisma.pushSubscription.delete({ where: { id: sub.id } });
+        }
+      }
+    });
+
+    await Promise.all(sendPromises);
+    return {
+      success: true,
+      message: `Отправлено на ${subscriptions.length} устройств`,
+    };
+  } catch (error) {
+    fastify.log.error(error);
+    return reply.status(500).send({ error: "Ошибка отправки уведомлений" });
+  }
 });
 
 // НОВЫЙ МАРШРУТ: Получение всех привычек из базы данных
