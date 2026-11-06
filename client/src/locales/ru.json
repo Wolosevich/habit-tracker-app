@@ -20,5 +20,7 @@
   "cancel": "Отмена",
   "delete": "Удалить",
   "saveChanges": "Сохранить изменения",
-  "calendar": "Календарь: {{name}}"
+  "calendar": "Календарь: {{name}}",
+  "enableNotifications": "🔔 Включить уведомления",
+  "disableNotifications": "🔕 Отключить уведомления"
 }

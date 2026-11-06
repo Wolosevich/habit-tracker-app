@@ -216,8 +216,8 @@ function AppContent() {
             onClick={handleToggleNotifications}
           >
             {isSubscribed
-              ? "🔕 Отключить уведомления"
-              : "🔔 Включить уведомления"}
+              ? t("disableNotifications")
+              : t("enableNotifications")}
           </Button>
           <input
             type="file"

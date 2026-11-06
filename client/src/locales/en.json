@@ -20,5 +20,7 @@
   "cancel": "Cancel",
   "delete": "Delete",
   "saveChanges": "Save changes",
-  "calendar": "Calendar: {{name}}"
+  "calendar": "Calendar: {{name}}",
+  "enableNotifications": "🔔 Enable notifications",
+  "disableNotifications": "🔕 Disable notifications"
 }
