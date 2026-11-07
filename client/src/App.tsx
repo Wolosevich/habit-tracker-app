@@ -5,6 +5,8 @@ import {
   checkSubscription,
 } from "./lib/push";
 import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
+import { Notifications, notifications } from "@mantine/notifications";
 import {
   MantineProvider,
   createTheme,
@@ -59,6 +61,7 @@ const theme = createTheme({
 export default function App() {
   return (
     <MantineProvider theme={theme} defaultColorScheme="auto">
+      <Notifications position="top-right" />
       <AppContent />
     </MantineProvider>
   );
@@ -171,9 +174,20 @@ function AppContent() {
     try {
       const imported = await readHabitsFromFile(file);
       importHabits(imported);
-      alert("Данные успешно загружены! / Data loaded successfully!");
+
+      // 👇 Красивое уведомление об успехе
+      notifications.show({
+        title: t("success"),
+        message: t("importSuccess"),
+        color: "green",
+      });
     } catch (err) {
-      alert((err as Error).message);
+      // 👇 Красивое уведомление об ошибке
+      notifications.show({
+        title: t("error"),
+        message: (err as Error).message,
+        color: "red",
+      });
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
     }

@@ -39,3 +39,14 @@ export async function updateHabit(id: string, data: any) {
   if (!response.ok) throw new Error("Ошибка при обновлении привычки");
   return response.json();
 }
+import type { Habit } from "../types/habit"; // Убедитесь, что этот импорт есть в начале файла
+
+export async function importHabitsApi(habits: Habit[]) {
+  const response = await fetch(`${API_URL}/habits/import`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(habits),
+  });
+  if (!response.ok) throw new Error("Ошибка при импорте привычек на сервер");
+  return response.json();
+}

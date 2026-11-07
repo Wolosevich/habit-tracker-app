@@ -70,11 +70,19 @@ export function useHabits() {
     [toggleDate],
   );
 
-  const importHabits = useCallback((imported: Habit[]) => {
-    // Временная заглушка, так как импорт JSON мы переделаем позже под базу данных
-    setHabits(imported);
-  }, []);
+  const importHabits = useCallback(async (imported: Habit[]) => {
+    try {
+      // 1. Отправляем данные на сервер
+      await api.importHabitsApi(imported);
 
+      // 2. Заново скачиваем свежий список из базы, чтобы отобразить его
+      const freshData = await api.fetchHabits();
+      setHabits(freshData);
+    } catch (err) {
+      console.error(err);
+      throw err; // Пробрасываем ошибку выше, чтобы App.tsx показал красную плашку
+    }
+  }, []);
   return {
     habits,
     loading,

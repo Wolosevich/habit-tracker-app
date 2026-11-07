@@ -114,6 +114,39 @@ fastify.get("/api/habits", async () => {
   const habits = await prisma.habit.findMany();
   return habits;
 });
+
+// Маршрут для массового импорта привычек
+fastify.post("/api/habits/import", async (request, reply) => {
+  const habits = request.body as any[];
+
+  if (!Array.isArray(habits)) {
+    return reply.status(400).send({ error: "Ожидается массив привычек" });
+  }
+
+  try {
+    // Подготавливаем данные (на случай, если в JSON не хватает каких-то полей)
+    const dataToInsert = habits.map((h) => ({
+      id: h.id,
+      name: h.name,
+      description: h.description || null,
+      color: h.color || "blue",
+      createdAt: h.createdAt ? new Date(h.createdAt) : new Date(),
+      completedDates: h.completedDates || [],
+    }));
+
+    // createMany позволяет вставить сразу много записей.
+    // skipDuplicates: true предотвратит ошибку, если вы импортируете те же самые привычки
+    const result = await prisma.habit.createMany({
+      data: dataToInsert,
+      skipDuplicates: true,
+    });
+
+    return { success: true, count: result.count };
+  } catch (error) {
+    fastify.log.error(error);
+    return reply.status(500).send({ error: "Ошибка при импорте данных" });
+  }
+});
 // НОВЫЙ МАРШРУТ: Создание привычки
 fastify.post("/api/habits", async (request, reply) => {
   // Говорим TypeScript, какие поля мы ожидаем в теле запроса
