@@ -1,4 +1,3 @@
-// Вспомогательная функция для конвертации ключа (требование браузера)
 function urlBase64ToUint8Array(base64String: string) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -11,51 +10,53 @@ function urlBase64ToUint8Array(base64String: string) {
 }
 
 export async function subscribeToPush() {
-  // 1. Проверяем поддержку браузера
+  console.log("1. Начинаем процесс подписки...");
+
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-    alert(
-      "Ваш браузер не поддерживает уведомления / Push notifications are not supported",
-    );
+    console.error("Ошибка: Браузер не поддерживает Push API");
+    alert("Ваш браузер не поддерживает уведомления");
     return;
   }
 
   try {
-    // 2. Запрашиваем разрешение у пользователя
+    console.log("2. Запрашиваем разрешение...");
     const permission = await Notification.requestPermission();
+    console.log("Результат разрешения:", permission);
+
     if (permission !== "granted") {
-      alert("Вы отклонили уведомления / Permission denied");
+      alert("Вы отклонили уведомления");
       return;
     }
 
-    // 3. Регистрируем Service Worker
-    const registration = await navigator.serviceWorker.register("/sw.js");
+    console.log("3. Ждем готовности Service Worker...");
+    const registration = await navigator.serviceWorker.ready;
+    console.log("4. Service Worker готов:", registration);
 
-    // 4. Получаем публичный ключ с бэкенда
+    console.log("5. Запрашиваем VAPID ключ с сервера...");
     const res = await fetch("http://localhost:3001/api/push/vapid-public-key");
+    if (!res.ok) throw new Error(`Ошибка сервера: ${res.status}`);
     const { publicKey } = await res.json();
+    console.log("6. Ключ получен:", publicKey);
 
-    // 5. Подписываемся на Push-уведомления
+    console.log("7. Создаем подписку в браузере...");
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(publicKey),
     });
+    console.log("8. Подписка создана:", subscription);
 
-    console.log("Подписка создана! Данные для бэкенда:", subscription);
-    // Отправляем данные подписки на наш бэкенд
-    await fetch("http://localhost:3001/api/push/subscribe", {
+    console.log("9. Отправляем на сервер...");
+    const subRes = await fetch("http://localhost:3001/api/push/subscribe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(subscription),
     });
-
-    //alert("Уведомления успешно включены и сохранены на сервере!");
-
-    // Пока просто выведем в консоль. На следующем шаге мы отправим это на бэкенд.
-    //alert("Уведомления успешно включены! (Проверьте консоль)");
+    console.log("10. Ответ сервера на сохранение:", subRes.status);
   } catch (err) {
-    console.error("Ошибка при подписке на уведомления:", err);
+    console.error("❌ ОШИБКА ПРИ ПОДПИСКЕ:", err);
   }
 }
+
 export async function checkSubscription() {
   if (!("serviceWorker" in navigator) || !("PushManager" in window))
     return false;
@@ -63,16 +64,14 @@ export async function checkSubscription() {
   const subscription = await registration.pushManager.getSubscription();
   return !!subscription;
 }
+
 export async function unsubscribeFromPush() {
   try {
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.getSubscription();
 
     if (subscription) {
-      // 1. Отписываемся в браузере
       await subscription.unsubscribe();
-
-      // 2. Сообщаем бэкенду, чтобы он удалил нас из базы
       await fetch("http://localhost:3001/api/push/unsubscribe", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
