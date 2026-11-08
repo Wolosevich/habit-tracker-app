@@ -1,8 +1,14 @@
 import { useState, useRef, useEffect } from "react";
+import { TimeInput } from '@mantine/dates';
+import '@mantine/dates/styles.css';
+import { Popover, TextInput } from '@mantine/core'; // TextInput и Popover из core
+import { IconSettings } from '@tabler/icons-react';
+
 import {
   subscribeToPush,
   unsubscribeFromPush,
   checkSubscription,
+  updateNotificationTime, getNotificationTime
 } from "./lib/push";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
@@ -136,13 +142,21 @@ function AppContent() {
   const [deletingHabit, setDeletingHabit] = useState<Habit | null>(null);
   const [calendarHabitId, setCalendarHabitId] = useState<string | null>(null);
   const calendarHabit = habits.find((h) => h.id === calendarHabitId) || null;
+  const [notifTime, setNotifTime] = useState('20:00');
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   // Проверяем статус подписки при загрузке страницы
   useEffect(() => {
-    checkSubscription().then(setIsSubscribed);
+    checkSubscription().then((subbed) => {
+      setIsSubscribed(subbed);
+      // Если пользователь подписан, загружаем его сохраненное время
+      if (subbed) {
+        getNotificationTime()
+          .then((time) => setNotifTime(time))
+          .catch(console.error);
+      }
+    });
   }, []);
-
   // Обработчик клика
   const handleToggleNotifications = async () => {
     if (isSubscribed) {
@@ -233,6 +247,48 @@ function AppContent() {
               ? t("disableNotifications")
               : t("enableNotifications")}
           </Button>
+          {/* ... кнопка Включить/Отключить уведомления ... */}
+
+          {isSubscribed && (
+            <Popover width={250} position="bottom-end" withArrow shadow="md">
+              <Popover.Target>
+                <ActionIcon variant="light" color="gray" size="lg" aria-label="Settings">
+                  <IconSettings size={20} />
+                </ActionIcon>
+              </Popover.Target>
+              <Popover.Dropdown>
+                <Stack gap="xs">
+                  <TimeInput
+                    label={t('notifTime')}
+                    value={notifTime}
+                    onChange={(event) => setNotifTime(event.currentTarget.value)}
+                    leftSection={<IconSettings size={16} />}
+                  />
+                  <Button
+                    size="xs"
+                    onClick={async () => {
+                      try {
+                        await updateNotificationTime(notifTime);
+                        notifications.show({
+                          title: t('success'),
+                          message: t('timeSaved'),
+                          color: 'green',
+                        });
+                      } catch (err) {
+                        notifications.show({
+                          title: t('error'),
+                          message: (err as Error).message,
+                          color: 'red',
+                        });
+                      }
+                    }}
+                  >
+                    {t('saveTime')}
+                  </Button>
+                </Stack>
+              </Popover.Dropdown>
+            </Popover>
+          )}
           <input
             type="file"
             accept=".json,application/json"

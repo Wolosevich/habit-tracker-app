@@ -65,3 +65,34 @@ export async function unsubscribeFromPush() {
     console.error("Ошибка при отписке:", err);
   }
 }
+export async function updateNotificationTime(time: string) {
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.getSubscription();
+
+  if (!subscription) throw new Error('Нет активной подписки');
+
+  const response = await fetch('http://localhost:3001/api/push/time', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ endpoint: subscription.endpoint, time }),
+  });
+
+  if (!response.ok) throw new Error('Ошибка обновления времени');
+  return response.json();
+}
+export async function getNotificationTime(): Promise<string> {
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.getSubscription();
+
+  if (!subscription) throw new Error('Нет активной подписки');
+
+  const response = await fetch('http://localhost:3001/api/push/time/get', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ endpoint: subscription.endpoint }),
+  });
+
+  if (!response.ok) throw new Error('Ошибка получения времени');
+  const data = await response.json();
+  return data.time;
+}

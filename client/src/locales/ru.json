@@ -25,5 +25,8 @@
   "saveChanges": "Сохранить изменения",
   "calendar": "Календарь: {{name}}",
   "enableNotifications": "🔔 Включить уведомления",
+  "notifTime": "Время уведомлений",
+  "saveTime": "Сохранить время",
+  "timeSaved": "Время уведомлений обновлено!",
   "disableNotifications": "🔕 Отключить уведомления"
 }

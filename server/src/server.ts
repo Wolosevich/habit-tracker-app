@@ -63,6 +63,44 @@ fastify.delete("/api/push/unsubscribe", async (request, reply) => {
   }
 });
 
+// Маршрут для обновления времени уведомлений
+fastify.put('/api/push/time', async (request, reply) => {
+  const { endpoint, time } = request.body as { endpoint: string; time: string };
+
+  if (!endpoint || !time) {
+    return reply.status(400).send({ error: 'Не передан endpoint или time' });
+  }
+
+  try {
+    await prisma.pushSubscription.updateMany({
+      where: { endpoint },
+      data: { notificationTime: time },
+    });
+    return { success: true };
+  } catch (error) {
+    return reply.status(500).send({ error: 'Ошибка обновления времени' });
+  }
+});
+
+// Маршрут для получения текущего времени уведомлений
+fastify.post('/api/push/time/get', async (request, reply) => {
+  const { endpoint } = request.body as { endpoint: string };
+
+  if (!endpoint) {
+    return reply.status(400).send({ error: 'Не передан endpoint' });
+  }
+
+  try {
+    const sub = await prisma.pushSubscription.findUnique({ where: { endpoint } });
+    if (!sub) {
+      return reply.status(404).send({ error: 'Подписка не найдена' });
+    }
+    return { time: sub.notificationTime };
+  } catch (error) {
+    return reply.status(500).send({ error: 'Ошибка получения времени' });
+  }
+});
+
 // Маршрут для тестовой отправки уведомлений
 fastify.post("/api/push/test", async (request, reply) => {
   try {

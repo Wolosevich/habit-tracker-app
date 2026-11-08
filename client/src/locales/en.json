@@ -25,5 +25,8 @@
   "saveChanges": "Save changes",
   "calendar": "Calendar: {{name}}",
   "enableNotifications": "🔔 Enable notifications",
-  "disableNotifications": "🔕 Disable notifications"
+  "disableNotifications": "🔕 Disable notifications",
+  "notifTime": "Notification time",
+  "saveTime": "Save time",
+  "timeSaved": "Notification time updated!"
 }

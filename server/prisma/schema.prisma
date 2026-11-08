@@ -23,5 +23,6 @@ model PushSubscription {
   endpoint  String   @unique
   p256dh    String
   auth      String
+  notificationTime String   @default("20:00")
   createdAt DateTime @default(now())
 }
