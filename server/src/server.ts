@@ -64,11 +64,11 @@ fastify.delete("/api/push/unsubscribe", async (request, reply) => {
 });
 
 // Маршрут для обновления времени уведомлений
-fastify.put('/api/push/time', async (request, reply) => {
+fastify.put("/api/push/time", async (request, reply) => {
   const { endpoint, time } = request.body as { endpoint: string; time: string };
 
   if (!endpoint || !time) {
-    return reply.status(400).send({ error: 'Не передан endpoint или time' });
+    return reply.status(400).send({ error: "Не передан endpoint или time" });
   }
 
   try {
@@ -78,26 +78,28 @@ fastify.put('/api/push/time', async (request, reply) => {
     });
     return { success: true };
   } catch (error) {
-    return reply.status(500).send({ error: 'Ошибка обновления времени' });
+    return reply.status(500).send({ error: "Ошибка обновления времени" });
   }
 });
 
 // Маршрут для получения текущего времени уведомлений
-fastify.post('/api/push/time/get', async (request, reply) => {
+fastify.post("/api/push/time/get", async (request, reply) => {
   const { endpoint } = request.body as { endpoint: string };
 
   if (!endpoint) {
-    return reply.status(400).send({ error: 'Не передан endpoint' });
+    return reply.status(400).send({ error: "Не передан endpoint" });
   }
 
   try {
-    const sub = await prisma.pushSubscription.findUnique({ where: { endpoint } });
+    const sub = await prisma.pushSubscription.findUnique({
+      where: { endpoint },
+    });
     if (!sub) {
-      return reply.status(404).send({ error: 'Подписка не найдена' });
+      return reply.status(404).send({ error: "Подписка не найдена" });
     }
     return { time: sub.notificationTime };
   } catch (error) {
-    return reply.status(500).send({ error: 'Ошибка получения времени' });
+    return reply.status(500).send({ error: "Ошибка получения времени" });
   }
 });
 
@@ -205,6 +207,7 @@ fastify.post("/api/habits", async (request, reply) => {
       name: body.name,
       description: body.description,
       color: body.color,
+      icon: body.icon || "target",
       // completedDates по умолчанию будет пустым массивом, как мы указали в схеме
     },
   });
@@ -244,6 +247,7 @@ fastify.put("/api/habits/:id", async (request, reply) => {
     name?: string;
     description?: string;
     color?: string;
+    icon?: string;
     completedDates?: string[];
   };
 

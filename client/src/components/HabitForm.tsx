@@ -11,6 +11,7 @@ import {
 } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import type { NewHabit } from "../types/habit";
+import { HABIT_ICONS } from "../lib/icons";
 
 const COLORS = [
   "blue",
@@ -34,12 +35,13 @@ export function HabitForm({
   submitLabel,
   onSubmit,
 }: HabitFormProps) {
-  const { t } = useTranslation(); // 👈 Подключаем перевод
+  const { t } = useTranslation();
   const [name, setName] = useState(initialValues?.name || "");
   const [description, setDescription] = useState(
     initialValues?.description || "",
   );
   const [color, setColor] = useState<string>(initialValues?.color || "blue");
+  const [icon, setIcon] = useState<string>(initialValues?.icon || "target");
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -50,11 +52,12 @@ export function HabitForm({
       name: trimmedName,
       description: description.trim() || undefined,
       color,
+      icon,
     });
-
     setName("");
     setDescription("");
     setColor("blue");
+    setIcon("target");
   };
 
   return (
@@ -76,6 +79,7 @@ export function HabitForm({
           autosize
           minRows={2}
         />
+
         <Group gap="xs" align="center">
           <Text size="sm" fw={500}>
             {t("colorLabel")}
@@ -97,7 +101,26 @@ export function HabitForm({
             </Tooltip>
           ))}
         </Group>
-        {/* Если submitLabel не передан, используем перевод по умолчанию */}
+
+        <Group gap="xs" align="center">
+          <Text size="sm" fw={500}>
+            Иконка:
+          </Text>
+          {HABIT_ICONS.map((item) => (
+            <Tooltip key={item.key} label={item.label}>
+              <Button
+                variant={icon === item.key ? "filled" : "light"}
+                color={icon === item.key ? color : "gray"}
+                size="compact-sm"
+                px={6}
+                onClick={() => setIcon(item.key)}
+              >
+                <item.component size={18} />
+              </Button>
+            </Tooltip>
+          ))}
+        </Group>
+
         <Button type="submit" disabled={!name.trim()}>
           {submitLabel || t("addHabit")}
         </Button>

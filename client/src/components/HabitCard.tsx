@@ -8,6 +8,7 @@ import {
   Box,
   Tooltip,
 } from "@mantine/core";
+import { getIconComponent } from "../lib/icons";
 import {
   IconCheck,
   IconTrash,
@@ -40,6 +41,7 @@ export function HabitCard({
   const doneToday = habit.completedDates.includes(today);
   const week = lastNDays(7);
   const streak = calculateStreak(habit.completedDates);
+  const Icon = getIconComponent(habit.icon);
 
   // 👇 Встроенная функция для перевода дней недели (Пн -> Mon) 👇
   const getDayLetter = (dateKey: string) => {
@@ -53,7 +55,10 @@ export function HabitCard({
     <Card withBorder shadow="sm" radius="md" padding="md">
       <Group justify="space-between" align="flex-start" wrap="nowrap">
         <Stack gap={4} style={{ flex: 1 }}>
-          <Text fw={600}>{habit.name}</Text>
+          <Group gap="xs">
+            <Icon size={20} color={`var(--mantine-color-${habit.color}-6)`} />
+            <Text fw={600}>{habit.name}</Text>
+          </Group>
           {habit.description && (
             <Text size="sm" c="dimmed">
               {habit.description}
