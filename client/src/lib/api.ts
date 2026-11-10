@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3001/api";
+const API_URL = "https://habit-tracker-app-z4x7.onrender.com/api";
 
 // Получить все привычки
 export async function fetchHabits() {

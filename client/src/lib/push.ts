@@ -21,7 +21,9 @@ export async function subscribeToPush() {
     if (permission !== "granted") return;
 
     const registration = await navigator.serviceWorker.ready;
-    const res = await fetch("http://localhost:3001/api/push/vapid-public-key");
+    const res = await fetch(
+      "https://habit-tracker-app-z4x7.onrender.com/api/push/vapid-public-key",
+    );
     if (!res.ok) throw new Error(`Ошибка сервера: ${res.status}`);
     const { publicKey } = await res.json();
 
@@ -30,11 +32,14 @@ export async function subscribeToPush() {
       applicationServerKey: urlBase64ToUint8Array(publicKey),
     });
 
-    await fetch("http://localhost:3001/api/push/subscribe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(subscription),
-    });
+    await fetch(
+      "https://habit-tracker-app-z4x7.onrender.com/api/push/subscribe",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(subscription),
+      },
+    );
   } catch (err) {
     console.error("❌ ОШИБКА ПРИ ПОДПИСКЕ:", err);
   }
@@ -55,11 +60,14 @@ export async function unsubscribeFromPush() {
 
     if (subscription) {
       await subscription.unsubscribe();
-      await fetch("http://localhost:3001/api/push/unsubscribe", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ endpoint: subscription.endpoint }),
-      });
+      await fetch(
+        "https://habit-tracker-app-z4x7.onrender.com/api/push/unsubscribe",
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ endpoint: subscription.endpoint }),
+        },
+      );
     }
   } catch (err) {
     console.error("Ошибка при отписке:", err);
@@ -69,30 +77,36 @@ export async function updateNotificationTime(time: string) {
   const registration = await navigator.serviceWorker.ready;
   const subscription = await registration.pushManager.getSubscription();
 
-  if (!subscription) throw new Error('Нет активной подписки');
+  if (!subscription) throw new Error("Нет активной подписки");
 
-  const response = await fetch('http://localhost:3001/api/push/time', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ endpoint: subscription.endpoint, time }),
-  });
+  const response = await fetch(
+    "https://habit-tracker-app-z4x7.onrender.com/api/push/time",
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ endpoint: subscription.endpoint, time }),
+    },
+  );
 
-  if (!response.ok) throw new Error('Ошибка обновления времени');
+  if (!response.ok) throw new Error("Ошибка обновления времени");
   return response.json();
 }
 export async function getNotificationTime(): Promise<string> {
   const registration = await navigator.serviceWorker.ready;
   const subscription = await registration.pushManager.getSubscription();
 
-  if (!subscription) throw new Error('Нет активной подписки');
+  if (!subscription) throw new Error("Нет активной подписки");
 
-  const response = await fetch('http://localhost:3001/api/push/time/get', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ endpoint: subscription.endpoint }),
-  });
+  const response = await fetch(
+    "https://habit-tracker-app-z4x7.onrender.com/api/push/time/get",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ endpoint: subscription.endpoint }),
+    },
+  );
 
-  if (!response.ok) throw new Error('Ошибка получения времени');
+  if (!response.ok) throw new Error("Ошибка получения времени");
   const data = await response.json();
   return data.time;
 }
