@@ -19,3 +19,26 @@ self.addEventListener("push", function (event) {
     event.waitUntil(self.registration.showNotification(data.title, options));
   }
 });
+// Обработчик клика по уведомлению
+self.addEventListener("notificationclick", function (event) {
+  // Закрываем само уведомление с экрана
+  event.notification.close();
+
+  // Открываем или фокусируем приложение
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
+        // Если приложение уже открыто в какой-то вкладке, фокусируемся на нем
+        for (const client of clientList) {
+          if (client.url.includes(self.location.origin) && "focus" in client) {
+            return client.focus();
+          }
+        }
+        // Если приложение закрыто, открываем его (главную страницу)
+        if (self.clients.openWindow) {
+          return self.clients.openWindow("/");
+        }
+      }),
+  );
+});
