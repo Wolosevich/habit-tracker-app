@@ -51,14 +51,16 @@ export function MonthCalendar({ habit, onToggleDate }: MonthCalendarProps) {
 
           const done = habit.completedDates.includes(dateKey);
           const isToday = dateKey === today;
+          const isFuture = dateKey > today;
           const dayNumber = parseInt(dateKey.split("-")[2], 10);
 
           return (
             <Tooltip key={dateKey} label={dateKey} withArrow>
               <Box
-                onClick={() => onToggleDate(habit.id, dateKey)}
+                onClick={() => !isFuture && onToggleDate(habit.id, dateKey)}
                 style={{
-                  cursor: "pointer",
+                  cursor: isFuture ? "not-allowed" : "pointer",
+                  opacity: isFuture ? 0.4 : 1,
                   aspectRatio: "1",
                   display: "flex",
                   alignItems: "center",

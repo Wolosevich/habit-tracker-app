@@ -1,14 +1,16 @@
 import { useState, useRef, useEffect } from "react";
-import { TimeInput } from '@mantine/dates';
-import '@mantine/dates/styles.css';
-import { Popover, TextInput } from '@mantine/core'; // TextInput и Popover из core
-import { IconSettings } from '@tabler/icons-react';
-
+import { TimeInput } from "@mantine/dates";
+import "@mantine/dates/styles.css";
+import { Popover } from "@mantine/core"; // TextInput и Popover из core
+import { IconSettings } from "@tabler/icons-react";
+import { getMonthlyStats } from "./lib/stats";
+import { StatsCard } from "./components/StatsCard";
 import {
   subscribeToPush,
   unsubscribeFromPush,
   checkSubscription,
-  updateNotificationTime, getNotificationTime
+  updateNotificationTime,
+  getNotificationTime,
 } from "./lib/push";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
@@ -142,8 +144,10 @@ function AppContent() {
   const [deletingHabit, setDeletingHabit] = useState<Habit | null>(null);
   const [calendarHabitId, setCalendarHabitId] = useState<string | null>(null);
   const calendarHabit = habits.find((h) => h.id === calendarHabitId) || null;
-  const [notifTime, setNotifTime] = useState('20:00');
+  const [notifTime, setNotifTime] = useState("20:00");
   const [isSubscribed, setIsSubscribed] = useState(false);
+  // Вычисляем статистику на основе текущих привычек
+  const stats = getMonthlyStats(habits);
 
   // Проверяем статус подписки при загрузке страницы
   useEffect(() => {
@@ -252,16 +256,23 @@ function AppContent() {
           {isSubscribed && (
             <Popover width={250} position="bottom-end" withArrow shadow="md">
               <Popover.Target>
-                <ActionIcon variant="light" color="gray" size="lg" aria-label="Settings">
+                <ActionIcon
+                  variant="light"
+                  color="gray"
+                  size="lg"
+                  aria-label="Settings"
+                >
                   <IconSettings size={20} />
                 </ActionIcon>
               </Popover.Target>
               <Popover.Dropdown>
                 <Stack gap="xs">
                   <TimeInput
-                    label={t('notifTime')}
+                    label={t("notifTime")}
                     value={notifTime}
-                    onChange={(event) => setNotifTime(event.currentTarget.value)}
+                    onChange={(event) =>
+                      setNotifTime(event.currentTarget.value)
+                    }
                     leftSection={<IconSettings size={16} />}
                   />
                   <Button
@@ -270,20 +281,20 @@ function AppContent() {
                       try {
                         await updateNotificationTime(notifTime);
                         notifications.show({
-                          title: t('success'),
-                          message: t('timeSaved'),
-                          color: 'green',
+                          title: t("success"),
+                          message: t("timeSaved"),
+                          color: "green",
                         });
                       } catch (err) {
                         notifications.show({
-                          title: t('error'),
+                          title: t("error"),
                           message: (err as Error).message,
-                          color: 'red',
+                          color: "red",
                         });
                       }
                     }}
                   >
-                    {t('saveTime')}
+                    {t("saveTime")}
                   </Button>
                 </Stack>
               </Popover.Dropdown>
@@ -304,6 +315,15 @@ function AppContent() {
       </Paper>
 
       <Divider my="xl" />
+
+      {/* 👇 Показываем статистику, только если есть привычки и загрузка завершена */}
+      {!loading && habits.length > 0 && (
+        <StatsCard
+          completed={stats.completed}
+          total={stats.total}
+          percentage={stats.percentage}
+        />
+      )}
 
       <Stack>
         {loading ? (

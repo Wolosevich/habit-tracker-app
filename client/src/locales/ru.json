@@ -28,5 +28,18 @@
   "notifTime": "Время уведомлений",
   "saveTime": "Сохранить время",
   "timeSaved": "Время уведомлений обновлено!",
-  "disableNotifications": "🔕 Отключить уведомления"
+  "disableNotifications": "🔕 Отключить уведомления",
+  "iconLabel": "Иконка:",
+  "icon_target": "Цель",
+  "icon_book": "Книга",
+  "icon_run": "Спорт",
+  "icon_code": "Код",
+  "icon_water": "Вода",
+  "icon_sleep": "Сон",
+  "icon_food": "Еда",
+  "icon_yoga": "Йога",
+  "icon_art": "Творчество",
+  "icon_music": "Музыка",
+  "monthlyProgress": "Прогресс за месяц",
+  "completedOfTotal": "Выполнено {{completed}} из {{total}}"
 }

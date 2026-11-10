@@ -104,10 +104,10 @@ export function HabitForm({
 
         <Group gap="xs" align="center">
           <Text size="sm" fw={500}>
-            Иконка:
+            {t("iconLabel")}
           </Text>
           {HABIT_ICONS.map((item) => (
-            <Tooltip key={item.key} label={item.label}>
+            <Tooltip key={item.key} label={t(item.label)}>
               <Button
                 variant={icon === item.key ? "filled" : "light"}
                 color={icon === item.key ? color : "gray"}
