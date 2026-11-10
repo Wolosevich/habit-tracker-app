@@ -194,6 +194,7 @@ fastify.post("/api/habits", async (request, reply) => {
     name: string;
     description?: string;
     color: string;
+    icon?: string;
   };
 
   // Простейшая валидация на сервере
@@ -221,8 +222,12 @@ startCronJobs();
 // Запуск сервера
 const start = async () => {
   try {
-    await fastify.listen({ port: 3001, host: "0.0.0.0" });
-    console.log(`Сервер запущен на http://localhost:3001`);
+    // 👇 Render сам передает порт через переменную окружения PORT
+    const port = process.env.PORT ? parseInt(process.env.PORT) : 3001;
+
+    // 👇 Слушаем на всех интерфейсах, чтобы Render мог достучаться до приложения
+    await fastify.listen({ port, host: "0.0.0.0" });
+    console.log(`Сервер запущен на порту ${port}`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
