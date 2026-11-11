@@ -1,15 +1,16 @@
-import cron from 'node-cron';
-import { prisma } from './db.js';
-import { webpush } from './push.js';
+import cron from "node-cron";
+import { prisma } from "./db.js";
+import { webpush } from "./push.js";
 
 export function startCronJobs() {
   // Теперь проверка запускается КАЖДУЮ МИНУТУ
-  cron.schedule('* * * * *', async () => {
+  cron.schedule("* * * * *", async () => {
     // Получаем текущее время сервера в формате "ЧЧ:ММ" (например, "20:00")
     const now = new Date();
-    const currentTime = now.toLocaleTimeString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
+    const currentTime = now.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Europe/Minsk",
     });
 
     console.log(`⏰ [Cron] Проверка уведомлений на ${currentTime}...`);
@@ -22,8 +23,8 @@ export function startCronJobs() {
 
       if (subscriptions.length > 0) {
         const payload = JSON.stringify({
-          title: 'Трекер привычек',
-          body: 'Самое время отметить свои привычки! 🔥',
+          title: "Трекер привычек",
+          body: "Самое время отметить свои привычки! 🔥",
         });
 
         for (const sub of subscriptions) {
@@ -33,7 +34,7 @@ export function startCronJobs() {
                 endpoint: sub.endpoint,
                 keys: { p256dh: sub.p256dh, auth: sub.auth },
               },
-              payload
+              payload,
             );
           } catch (error: any) {
             if (error.statusCode === 410) {
@@ -41,10 +42,12 @@ export function startCronJobs() {
             }
           }
         }
-        console.log(`✅ [Cron] Отправлено на ${subscriptions.length} устройств.`);
+        console.log(
+          `✅ [Cron] Отправлено на ${subscriptions.length} устройств.`,
+        );
       }
     } catch (error) {
-      console.error('Ошибка в Cron-задаче:', error);
+      console.error("Ошибка в Cron-задаче:", error);
     }
   });
 }
