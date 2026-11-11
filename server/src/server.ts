@@ -103,51 +103,6 @@ fastify.post("/api/push/time/get", async (request, reply) => {
   }
 });
 
-// Маршрут для тестовой отправки уведомлений
-fastify.post("/api/push/test", async (request, reply) => {
-  try {
-    // 1. Получаем все подписки из базы
-    const subscriptions = await prisma.pushSubscription.findMany();
-
-    if (subscriptions.length === 0) {
-      return reply.status(404).send({ error: "Нет активных подписок" });
-    }
-
-    // 2. Формируем сообщение
-    const payload = JSON.stringify({
-      title: "Трекер привычек",
-      body: "Не забудьте выполнить свои привычки сегодня! 🔥",
-    });
-
-    // 3. Отправляем уведомление на каждое устройство
-    const sendPromises = subscriptions.map(async (sub) => {
-      try {
-        await webpush.sendNotification(
-          {
-            endpoint: sub.endpoint,
-            keys: { p256dh: sub.p256dh, auth: sub.auth },
-          },
-          payload,
-        );
-      } catch (error: any) {
-        // Если подписка устарела (ошибка 410), удаляем её из базы
-        if (error.statusCode === 410) {
-          await prisma.pushSubscription.delete({ where: { id: sub.id } });
-        }
-      }
-    });
-
-    await Promise.all(sendPromises);
-    return {
-      success: true,
-      message: `Отправлено на ${subscriptions.length} устройств`,
-    };
-  } catch (error) {
-    fastify.log.error(error);
-    return reply.status(500).send({ error: "Ошибка отправки уведомлений" });
-  }
-});
-
 // НОВЫЙ МАРШРУТ: Получение всех привычек из базы данных
 fastify.get("/api/habits", async () => {
   // Просим Prisma найти все записи в таблице Habit

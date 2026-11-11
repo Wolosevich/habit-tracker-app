@@ -16,10 +16,6 @@ export function startCronJobs() {
     console.log(`⏰ [Cron] Проверка уведомлений на ${currentTime}...`);
 
     try {
-      const allSubs = await prisma.pushSubscription.findMany();
-      console.log(
-        `📊 В базе ${allSubs.length} подписок. Времена: ${allSubs.map((s) => s.notificationTime).join(", ")}`,
-      );
       // Ищем подписки, у которых время совпадает с текущим
       const subscriptions = await prisma.pushSubscription.findMany({
         where: { notificationTime: currentTime },
