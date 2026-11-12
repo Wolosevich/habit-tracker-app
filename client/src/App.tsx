@@ -144,7 +144,12 @@ function AppContent() {
   const [deletingHabit, setDeletingHabit] = useState<Habit | null>(null);
   const [calendarHabitId, setCalendarHabitId] = useState<string | null>(null);
   const calendarHabit = habits.find((h) => h.id === calendarHabitId) || null;
-  const [notifTime, setNotifTime] = useState("20:00");
+  //const [notifTime, setNotifTime] = useState("20:00");
+  const [isSavingTime, setIsSavingTime] = useState(false);
+  // Берем время из локальной памяти браузера, если оно там есть
+  const [notifTime, setNotifTime] = useState(() => {
+    return localStorage.getItem("notificationTime") || "20:00";
+  });
   const [isSubscribed, setIsSubscribed] = useState(false);
   // Вычисляем статистику на основе текущих привычек
   const stats = getMonthlyStats(habits);
@@ -153,10 +158,12 @@ function AppContent() {
   useEffect(() => {
     checkSubscription().then((subbed) => {
       setIsSubscribed(subbed);
-      // Если пользователь подписан, загружаем его сохраненное время
       if (subbed) {
         getNotificationTime()
-          .then((time) => setNotifTime(time))
+          .then((time) => {
+            setNotifTime(time);
+            localStorage.setItem("notificationTime", time); // 👈 Сохраняем локально
+          })
           .catch(console.error);
       }
     });
@@ -277,9 +284,12 @@ function AppContent() {
                   />
                   <Button
                     size="xs"
+                    loading={isSavingTime} // 👈 Показываем спиннер
                     onClick={async () => {
+                      setIsSavingTime(true); // 👈 Включаем загрузку
                       try {
                         await updateNotificationTime(notifTime);
+                        localStorage.setItem("notificationTime", notifTime);
                         notifications.show({
                           title: t("success"),
                           message: t("timeSaved"),
@@ -291,6 +301,8 @@ function AppContent() {
                           message: (err as Error).message,
                           color: "red",
                         });
+                      } finally {
+                        setIsSavingTime(false); // 👈 Выключаем загрузку
                       }
                     }}
                   >
