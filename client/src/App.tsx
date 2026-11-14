@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { TimeInput } from '@mantine/dates';
 import '@mantine/dates/styles.css';
-import { Popover, TextInput } from '@mantine/core'; // TextInput и Popover из core
+import { Popover } from '@mantine/core'; // TextInput и Popover из core
 import { IconSettings } from '@tabler/icons-react';
 
 import {
