@@ -13,9 +13,8 @@ model Habit {
   name           String
   description    String?
   color          String
+  icon           String   @default("target")
   createdAt      DateTime @default(now())
-  
-  // Массив строк для отметок (формат YYYY-MM-DD)
   completedDates String[] @default([])
 }
 model PushSubscription {

@@ -1,18 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { TimeInput } from '@mantine/dates';
-import '@mantine/dates/styles.css';
-import { Popover } from '@mantine/core'; // TextInput и Popover из core
-import { IconSettings } from '@tabler/icons-react';
-
-import {
-  subscribeToPush,
-  unsubscribeFromPush,
-  checkSubscription,
-  updateNotificationTime, getNotificationTime
-} from "./lib/push";
 import "@mantine/core/styles.css";
-import "@mantine/notifications/styles.css";
-import { Notifications, notifications } from "@mantine/notifications";
 import {
   MantineProvider,
   createTheme,
@@ -31,37 +18,32 @@ import {
   useComputedColorScheme,
   Loader,
   Center,
+  Popover,
 } from "@mantine/core";
-import {
-  IconDownload,
-  IconUpload,
-  IconSun,
-  IconMoon,
-} from "@tabler/icons-react";
-import { useTranslation, Trans } from "react-i18next";
+import { IconDownload, IconUpload, IconSun, IconMoon, IconSettings } from "@tabler/icons-react";
+import { useTranslation, Trans } from 'react-i18next';
+import { TimeInput } from '@mantine/dates';
+import '@mantine/dates/styles.css';
+import '@mantine/notifications/styles.css';
+import { Notifications, notifications } from '@mantine/notifications';
 import { downloadHabits, readHabitsFromFile } from "./lib/backup";
 import { useHabits } from "./hooks/useHabits";
 import { HabitForm } from "./components/HabitForm";
 import { HabitCard } from "./components/HabitCard";
 import { MonthCalendar } from "./components/MonthCalendar";
+import { StatsCard } from "./components/StatsCard";
+import { getMonthlyStats } from "./lib/stats";
+import { subscribeToPush, unsubscribeFromPush, checkSubscription, updateNotificationTime, getNotificationTime } from "./lib/push";
 import type { Habit, NewHabit } from "./types/habit";
 
 const theme = createTheme({
   colors: {
     dark: [
-      "#f5f5f5",
-      "#e0e0e0",
-      "#c2c2c2",
-      "#a3a3a3",
-      "#858585",
-      "#708499",
-      "#232e3c",
-      "#17212b",
-      "#0e1621",
-      "#080c11",
+      '#f5f5f5', '#e0e0e0', '#c2c2c2', '#a3a3a3', '#858585',
+      '#708499', '#232e3c', '#17212b', '#0e1621', '#080c11',
     ],
   },
-  primaryColor: "blue",
+  primaryColor: 'blue',
 });
 
 export default function App() {
@@ -85,46 +67,33 @@ function ThemeToggle() {
         variant="default"
         size="lg"
         aria-label="Toggle color scheme"
-        onClick={() =>
-          setColorScheme(computedColorScheme === "light" ? "dark" : "light")
-        }
+        onClick={() => setColorScheme(computedColorScheme === "light" ? "dark" : "light")}
       >
-        {computedColorScheme === "light" ? (
-          <IconMoon size={20} stroke={1.5} />
-        ) : (
-          <IconSun size={20} stroke={1.5} />
-        )}
+        {computedColorScheme === "light" ? <IconMoon size={20} stroke={1.5} /> : <IconSun size={20} stroke={1.5} />}
       </ActionIcon>
     </Tooltip>
   );
 }
 
-// 👇 НОВЫЙ КОМПОНЕНТ ДЛЯ ПЕРЕКЛЮЧЕНИЯ ЯЗЫКА 👇
 function LanguageToggle() {
   const { i18n } = useTranslation();
-  const isRu = i18n.language === "ru";
+  const isRu = i18n.language === 'ru';
 
   const toggleLanguage = () => {
-    const newLang = isRu ? "en" : "ru";
+    const newLang = isRu ? 'en' : 'ru';
     i18n.changeLanguage(newLang);
-    localStorage.setItem("appLanguage", newLang);
+    localStorage.setItem('appLanguage', newLang);
   };
 
   return (
-    <Button
-      variant="default"
-      size="compact-md"
-      onClick={toggleLanguage}
-      px="xs"
-      fw={600}
-    >
-      {isRu ? "EN" : "RU"}
+    <Button variant="default" size="compact-md" onClick={toggleLanguage} px="xs" fw={600}>
+      {isRu ? 'EN' : 'RU'}
     </Button>
   );
 }
 
 function AppContent() {
-  const { t } = useTranslation(); // 👈 Подключаем функцию перевода
+  const { t } = useTranslation();
   const {
     habits,
     loading,
@@ -142,22 +111,30 @@ function AppContent() {
   const [deletingHabit, setDeletingHabit] = useState<Habit | null>(null);
   const [calendarHabitId, setCalendarHabitId] = useState<string | null>(null);
   const calendarHabit = habits.find((h) => h.id === calendarHabitId) || null;
-  const [notifTime, setNotifTime] = useState('20:00');
-  const [isSubscribed, setIsSubscribed] = useState(false);
 
-  // Проверяем статус подписки при загрузке страницы
+  // Берем время из локальной памяти браузера, если оно там есть
+  const [notifTime, setNotifTime] = useState(() => {
+    return localStorage.getItem('notificationTime') || '20:00';
+  });
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSavingTime, setIsSavingTime] = useState(false);
+
+  const stats = getMonthlyStats(habits);
+
   useEffect(() => {
     checkSubscription().then((subbed) => {
       setIsSubscribed(subbed);
-      // Если пользователь подписан, загружаем его сохраненное время
       if (subbed) {
         getNotificationTime()
-          .then((time) => setNotifTime(time))
+          .then((time) => {
+            setNotifTime(time);
+            localStorage.setItem('notificationTime', time);
+          })
           .catch(console.error);
       }
     });
   }, []);
-  // Обработчик клика
+
   const handleToggleNotifications = async () => {
     if (isSubscribed) {
       await unsubscribeFromPush();
@@ -167,6 +144,7 @@ function AppContent() {
       setIsSubscribed(true);
     }
   };
+
   const handleUpdate = (data: NewHabit) => {
     if (editingHabit) {
       updateHabit(editingHabit.id, data);
@@ -187,20 +165,19 @@ function AppContent() {
 
     try {
       const imported = await readHabitsFromFile(file);
-      importHabits(imported);
+      await importHabits(imported);
 
-      // 👇 Красивое уведомление об успехе
       notifications.show({
-        title: t("success"),
-        message: t("importSuccess"),
-        color: "green",
+        title: t('success'),
+        message: t('importSuccess'),
+        color: 'green',
       });
+
     } catch (err) {
-      // 👇 Красивое уведомление об ошибке
       notifications.show({
-        title: t("error"),
+        title: t('error'),
         message: (err as Error).message,
-        color: "red",
+        color: 'red',
       });
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -211,31 +188,20 @@ function AppContent() {
     <Container size="sm" py="xl">
       <Group justify="space-between" align="flex-end" mt="sm" mb="lg">
         <div>
-          <Title order={1}>{t("appTitle")}</Title>
-          <Text c="dimmed" mt="sm">
-            {t("appSubtitle")}
-          </Text>
+          <Title order={1}>{t('appTitle')}</Title>
+          <Text c="dimmed" mt="sm">{t('appSubtitle')}</Text>
         </div>
 
         <Group gap="xs">
           <LanguageToggle />
           <ThemeToggle />
-          <Button
-            variant="light"
-            size="xs"
-            leftSection={<IconDownload size={16} />}
-            onClick={() => downloadHabits(habits)}
-          >
-            {t("export")}
+          <Button variant="light" size="xs" leftSection={<IconDownload size={16} />} onClick={() => downloadHabits(habits)}>
+            {t('export')}
           </Button>
-          <Button
-            variant="light"
-            size="xs"
-            leftSection={<IconUpload size={16} />}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {t("import")}
+          <Button variant="light" size="xs" leftSection={<IconUpload size={16} />} onClick={() => fileInputRef.current?.click()}>
+            {t('import')}
           </Button>
+          <input type="file" accept=".json,application/json" ref={fileInputRef} style={{ display: "none" }} onChange={handleImport} />
 
           <Button
             variant={isSubscribed ? "outline" : "light"}
@@ -243,11 +209,8 @@ function AppContent() {
             size="xs"
             onClick={handleToggleNotifications}
           >
-            {isSubscribed
-              ? t("disableNotifications")
-              : t("enableNotifications")}
+            {isSubscribed ? t('disableNotifications') : t('enableNotifications')}
           </Button>
-          {/* ... кнопка Включить/Отключить уведомления ... */}
 
           {isSubscribed && (
             <Popover width={250} position="bottom-end" withArrow shadow="md">
@@ -266,9 +229,12 @@ function AppContent() {
                   />
                   <Button
                     size="xs"
+                    loading={isSavingTime}
                     onClick={async () => {
+                      setIsSavingTime(true);
                       try {
                         await updateNotificationTime(notifTime);
+                        localStorage.setItem('notificationTime', notifTime);
                         notifications.show({
                           title: t('success'),
                           message: t('timeSaved'),
@@ -280,6 +246,8 @@ function AppContent() {
                           message: (err as Error).message,
                           color: 'red',
                         });
+                      } finally {
+                        setIsSavingTime(false);
                       }
                     }}
                   >
@@ -289,13 +257,6 @@ function AppContent() {
               </Popover.Dropdown>
             </Popover>
           )}
-          <input
-            type="file"
-            accept=".json,application/json"
-            ref={fileInputRef}
-            style={{ display: "none" }}
-            onChange={handleImport}
-          />
         </Group>
       </Group>
 
@@ -305,15 +266,15 @@ function AppContent() {
 
       <Divider my="xl" />
 
+      {!loading && habits.length > 0 && (
+        <StatsCard completed={stats.completed} total={stats.total} percentage={stats.percentage} />
+      )}
+
       <Stack>
         {loading ? (
-          <Center py="xl">
-            <Loader color="blue" />
-          </Center>
+          <Center py="xl"><Loader color="blue" /></Center>
         ) : habits.length === 0 ? (
-          <Text c="dimmed" ta="center">
-            {t("emptyState")}
-          </Text>
+          <Text c="dimmed" ta="center">{t('emptyState')}</Text>
         ) : (
           habits.map((habit) => (
             <HabitCard
@@ -328,53 +289,24 @@ function AppContent() {
         )}
       </Stack>
 
-      <Modal
-        opened={!!editingHabit}
-        onClose={() => setEditingHabit(null)}
-        title={t("editHabit")}
-      >
+      <Modal opened={!!editingHabit} onClose={() => setEditingHabit(null)} title={t('editHabit')}>
         {editingHabit && (
-          <HabitForm
-            initialValues={editingHabit}
-            submitLabel={t("saveChanges")}
-            onSubmit={handleUpdate}
-          />
+          <HabitForm initialValues={editingHabit} submitLabel={t('saveChanges')} onSubmit={handleUpdate} />
         )}
       </Modal>
 
-      <Modal
-        opened={!!deletingHabit}
-        onClose={() => setDeletingHabit(null)}
-        title={t("deleteHabit")}
-        size="sm"
-      >
+      <Modal opened={!!deletingHabit} onClose={() => setDeletingHabit(null)} title={t('deleteHabit')} size="sm">
         <Text mb="lg">
-          {/* Используем Trans, так как внутри перевода есть тег <b> */}
-          <Trans
-            i18nKey="deleteConfirm"
-            values={{ name: deletingHabit?.name }}
-            components={{ b: <b /> }}
-          />
+          <Trans i18nKey="deleteConfirm" values={{ name: deletingHabit?.name }} components={{ b: <b /> }} />
         </Text>
         <Group justify="flex-end">
-          <Button variant="default" onClick={() => setDeletingHabit(null)}>
-            {t("cancel")}
-          </Button>
-          <Button color="red" onClick={handleConfirmDelete}>
-            {t("delete")}
-          </Button>
+          <Button variant="default" onClick={() => setDeletingHabit(null)}>{t('cancel')}</Button>
+          <Button color="red" onClick={handleConfirmDelete}>{t('delete')}</Button>
         </Group>
       </Modal>
 
-      <Modal
-        opened={!!calendarHabitId}
-        onClose={() => setCalendarHabitId(null)}
-        title={t("calendar", { name: calendarHabit?.name || "" })}
-        size="md"
-      >
-        {calendarHabit && (
-          <MonthCalendar habit={calendarHabit} onToggleDate={toggleDate} />
-        )}
+      <Modal opened={!!calendarHabitId} onClose={() => setCalendarHabitId(null)} title={t('calendar', { name: calendarHabit?.name || '' })} size="md">
+        {calendarHabit && <MonthCalendar habit={calendarHabit} onToggleDate={toggleDate} />}
       </Modal>
     </Container>
   );

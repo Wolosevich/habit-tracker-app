@@ -28,5 +28,18 @@
   "disableNotifications": "🔕 Disable notifications",
   "notifTime": "Notification time",
   "saveTime": "Save time",
-  "timeSaved": "Notification time updated!"
+  "timeSaved": "Notification time updated!",
+  "iconLabel": "Icon:",
+  "icon_target": "Target",
+  "icon_book": "Book",
+  "icon_run": "Sport",
+  "icon_code": "Code",
+  "icon_water": "Water",
+  "icon_sleep": "Sleep",
+  "icon_food": "Food",
+  "icon_yoga": "Yoga",
+  "icon_art": "Art",
+  "icon_music": "Music",
+  "monthlyProgress": "Monthly Progress",
+  "completedOfTotal": "Completed {{completed}} of {{total}}"
 }

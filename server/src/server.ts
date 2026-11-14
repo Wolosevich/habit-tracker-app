@@ -64,11 +64,11 @@ fastify.delete("/api/push/unsubscribe", async (request, reply) => {
 });
 
 // Маршрут для обновления времени уведомлений
-fastify.put('/api/push/time', async (request, reply) => {
+fastify.put("/api/push/time", async (request, reply) => {
   const { endpoint, time } = request.body as { endpoint: string; time: string };
 
   if (!endpoint || !time) {
-    return reply.status(400).send({ error: 'Не передан endpoint или time' });
+    return reply.status(400).send({ error: "Не передан endpoint или time" });
   }
 
   try {
@@ -78,71 +78,28 @@ fastify.put('/api/push/time', async (request, reply) => {
     });
     return { success: true };
   } catch (error) {
-    return reply.status(500).send({ error: 'Ошибка обновления времени' });
+    return reply.status(500).send({ error: "Ошибка обновления времени" });
   }
 });
 
 // Маршрут для получения текущего времени уведомлений
-fastify.post('/api/push/time/get', async (request, reply) => {
+fastify.post("/api/push/time/get", async (request, reply) => {
   const { endpoint } = request.body as { endpoint: string };
 
   if (!endpoint) {
-    return reply.status(400).send({ error: 'Не передан endpoint' });
+    return reply.status(400).send({ error: "Не передан endpoint" });
   }
 
   try {
-    const sub = await prisma.pushSubscription.findUnique({ where: { endpoint } });
+    const sub = await prisma.pushSubscription.findUnique({
+      where: { endpoint },
+    });
     if (!sub) {
-      return reply.status(404).send({ error: 'Подписка не найдена' });
+      return reply.status(404).send({ error: "Подписка не найдена" });
     }
     return { time: sub.notificationTime };
   } catch (error) {
-    return reply.status(500).send({ error: 'Ошибка получения времени' });
-  }
-});
-
-// Маршрут для тестовой отправки уведомлений
-fastify.post("/api/push/test", async (request, reply) => {
-  try {
-    // 1. Получаем все подписки из базы
-    const subscriptions = await prisma.pushSubscription.findMany();
-
-    if (subscriptions.length === 0) {
-      return reply.status(404).send({ error: "Нет активных подписок" });
-    }
-
-    // 2. Формируем сообщение
-    const payload = JSON.stringify({
-      title: "Трекер привычек",
-      body: "Не забудьте выполнить свои привычки сегодня! 🔥",
-    });
-
-    // 3. Отправляем уведомление на каждое устройство
-    const sendPromises = subscriptions.map(async (sub) => {
-      try {
-        await webpush.sendNotification(
-          {
-            endpoint: sub.endpoint,
-            keys: { p256dh: sub.p256dh, auth: sub.auth },
-          },
-          payload,
-        );
-      } catch (error: any) {
-        // Если подписка устарела (ошибка 410), удаляем её из базы
-        if (error.statusCode === 410) {
-          await prisma.pushSubscription.delete({ where: { id: sub.id } });
-        }
-      }
-    });
-
-    await Promise.all(sendPromises);
-    return {
-      success: true,
-      message: `Отправлено на ${subscriptions.length} устройств`,
-    };
-  } catch (error) {
-    fastify.log.error(error);
-    return reply.status(500).send({ error: "Ошибка отправки уведомлений" });
+    return reply.status(500).send({ error: "Ошибка получения времени" });
   }
 });
 
@@ -192,6 +149,7 @@ fastify.post("/api/habits", async (request, reply) => {
     name: string;
     description?: string;
     color: string;
+    icon?: string;
   };
 
   // Простейшая валидация на сервере
@@ -205,6 +163,7 @@ fastify.post("/api/habits", async (request, reply) => {
       name: body.name,
       description: body.description,
       color: body.color,
+      icon: body.icon || "target",
       // completedDates по умолчанию будет пустым массивом, как мы указали в схеме
     },
   });
@@ -218,8 +177,12 @@ startCronJobs();
 // Запуск сервера
 const start = async () => {
   try {
-    await fastify.listen({ port: 3001, host: "0.0.0.0" });
-    console.log(`Сервер запущен на http://localhost:3001`);
+    // 👇 Render сам передает порт через переменную окружения PORT
+    const port = process.env.PORT ? parseInt(process.env.PORT) : 3001;
+
+    // 👇 Слушаем на всех интерфейсах, чтобы Render мог достучаться до приложения
+    await fastify.listen({ port, host: "0.0.0.0" });
+    console.log(`Сервер запущен на порту ${port}`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
@@ -244,6 +207,7 @@ fastify.put("/api/habits/:id", async (request, reply) => {
     name?: string;
     description?: string;
     color?: string;
+    icon?: string;
     completedDates?: string[];
   };
 
