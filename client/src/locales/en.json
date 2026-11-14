@@ -40,6 +40,17 @@
   "icon_yoga": "Yoga",
   "icon_art": "Art",
   "icon_music": "Music",
+  "authTitle": "Welcome back!",
+  "authSubtitle": "Sign in or create an account to sync your habits.",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "loginBtn": "Sign In",
+  "registerBtn": "Sign Up",
+  "loginTab": "Login",
+  "registerTab": "Register",
+  "authError": "Auth error",
+  "authSuccess": "Successfully logged in!",
+  "logout": "Logout",
   "monthlyProgress": "Monthly Progress",
   "completedOfTotal": "Completed {{completed}} of {{total}}"
 }

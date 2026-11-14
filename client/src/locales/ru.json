@@ -41,5 +41,16 @@
   "icon_art": "Творчество",
   "icon_music": "Музыка",
   "monthlyProgress": "Прогресс за месяц",
+  "authTitle": "С возвращением!",
+  "authSubtitle": "Войдите или создайте аккаунт, чтобы синхронизировать привычки.",
+  "emailLabel": "Email",
+  "passwordLabel": "Пароль",
+  "loginBtn": "Войти",
+  "registerBtn": "Зарегистрироваться",
+  "loginTab": "Вход",
+  "registerTab": "Регистрация",
+  "authError": "Ошибка авторизации",
+  "authSuccess": "Успешный вход!",
+  "logout": "Выйти",
   "completedOfTotal": "Выполнено {{completed}} из {{total}}"
 }

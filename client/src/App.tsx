@@ -1,4 +1,7 @@
 import { useState, useRef, useEffect } from "react";
+import type { Session } from '@supabase/supabase-js';
+import { supabase } from './lib/supabase';
+import { AuthScreen } from './components/AuthScreen';
 import "@mantine/core/styles.css";
 import {
   MantineProvider,
@@ -47,13 +50,41 @@ const theme = createTheme({
 });
 
 export default function App() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Проверяем сессию при загрузке
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setIsLoading(false);
+    });
+
+    // Подписываемся на изменения (вход/выход)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <MantineProvider theme={theme} defaultColorScheme="auto">
       <Notifications position="top-right" />
-      <AppContent />
+
+      {isLoading ? (
+        <Center h="100vh"><Loader /></Center>
+      ) : session ? (
+        <AppContent /> // 👈 Если вошел — показываем трекер
+      ) : (
+        <AuthScreen /> // 👈 Если нет — показываем экран входа
+      )}
     </MantineProvider>
   );
 }
+
 
 function ThemeToggle() {
   const { setColorScheme } = useMantineColorScheme();
