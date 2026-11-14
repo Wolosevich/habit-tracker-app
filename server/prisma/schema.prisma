@@ -11,6 +11,7 @@ datasource db {
 model Habit {
   id             String   @id @default(uuid())
   name           String
+  userId         String
   description    String?
   color          String
   icon           String   @default("target")
@@ -19,6 +20,7 @@ model Habit {
 }
 model PushSubscription {
   id        String   @id @default(uuid())
+  userId    String
   endpoint  String   @unique
   p256dh    String
   auth      String
