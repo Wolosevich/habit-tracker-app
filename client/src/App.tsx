@@ -23,7 +23,7 @@ import {
   Center,
   Popover,
 } from "@mantine/core";
-import { IconDownload, IconUpload, IconSun, IconMoon, IconSettings } from "@tabler/icons-react";
+import { IconDownload, IconUpload, IconSun, IconMoon, IconSettings, IconLogout } from "@tabler/icons-react";
 import { useTranslation, Trans } from 'react-i18next';
 import { TimeInput } from '@mantine/dates';
 import '@mantine/dates/styles.css';
@@ -233,6 +233,19 @@ function AppContent() {
             {t('import')}
           </Button>
           <input type="file" accept=".json,application/json" ref={fileInputRef} style={{ display: "none" }} onChange={handleImport} />
+
+          {/* 👇 ДОБАВЬТЕ ЭТОТ БЛОК 👇 */}
+          <Tooltip label={t('logout')}>
+            <ActionIcon
+              variant="light"
+              color="red"
+              size="lg"
+              onClick={() => supabase.auth.signOut()}
+            >
+              <IconLogout size={20} />
+            </ActionIcon>
+          </Tooltip>
+          {/* 👆 КОНЕЦ БЛОКА 👆 */}
 
           <Button
             variant={isSubscribed ? "outline" : "light"}
