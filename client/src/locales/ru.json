@@ -52,5 +52,14 @@
   "authError": "Ошибка авторизации",
   "authSuccess": "Успешный вход!",
   "logout": "Выйти",
-  "completedOfTotal": "Выполнено {{completed}} из {{total}}"
+  "completedOfTotal": "Выполнено {{completed}} из {{total}}",
+  "settings": "Настройки",
+  "settingsPlaceholder": "Здесь скоро появятся настройки темы, языка и уведомлений.",
+  "appearance": "Внешний вид",
+  "themeLight": "Светлая",
+  "themeDark": "Тёмная",
+  "themeAuto": "Системная",
+  "language": "Язык",
+  "notifications": "Уведомления",
+  "data": "Данные"
 }

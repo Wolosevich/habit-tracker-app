@@ -52,5 +52,14 @@
   "authSuccess": "Successfully logged in!",
   "logout": "Logout",
   "monthlyProgress": "Monthly Progress",
-  "completedOfTotal": "Completed {{completed}} of {{total}}"
+  "completedOfTotal": "Completed {{completed}} of {{total}}",
+  "settings": "Settings",
+  "settingsPlaceholder": "Theme, language and notification settings coming soon.",
+  "appearance": "Appearance",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeAuto": "System",
+  "language": "Language",
+  "notifications": "Notifications",
+  "data": "Data"
 }
