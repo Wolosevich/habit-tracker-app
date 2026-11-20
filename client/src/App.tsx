@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { HabitsProvider, useHabitsContext } from "./context/HabitsContext";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { PageTransition } from './components/PageTransition';
 import { SettingsPage } from "./pages/SettingsPage";
 import { StatsPage } from './pages/StatsPage';
@@ -275,15 +275,21 @@ function AppContent() {
             {t("emptyState")}
           </Text>
         ) : (
-          habits.map((habit) => (
-            <HabitCard
+          habits.map((habit, index) => (
+            <motion.div
               key={habit.id}
-              habit={habit}
-              onToggleToday={toggleToday}
-              onEdit={setEditingHabit}
-              onRemove={() => setDeletingHabit(habit)}
-              onShowCalendar={(habit) => setCalendarHabitId(habit.id)}
-            />
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+            >
+              <HabitCard
+                habit={habit}
+                onToggleToday={toggleToday}
+                onEdit={setEditingHabit}
+                onRemove={() => setDeletingHabit(habit)}
+                onShowCalendar={(habit) => setCalendarHabitId(habit.id)}
+              />
+            </motion.div>
           ))
         )}
       </Stack>

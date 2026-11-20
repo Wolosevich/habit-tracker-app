@@ -12,7 +12,7 @@
   "import": "Import",
   "doneToday": "Done today",
   "notDone": "Not marked",
-  "totalDays": "Total: {{count}} days",
+  "totalDays": "Total days",
   "streak": "{{count}} day streak",
   "editHabit": "Edit habit",
   "deleteHabit": "Delete habit?",

@@ -23,34 +23,40 @@ export function StatsPage() {
                 <StatsCard completed={stats.completed} total={stats.total} percentage={stats.percentage} />
 
                 {/* Дополнительные виджеты */}
-                <SimpleGrid cols={2}>
+                <SimpleGrid cols={2} spacing="md">
                     <Paper withBorder p="md" radius="md">
-                        <Group>
+                        <Group wrap="nowrap" align="flex-start">
                             <ThemeIcon color="teal" variant="light" size="lg" radius="md">
                                 <IconCheck size={20} />
                             </ThemeIcon>
-                            <div>
-                                <Text c="dimmed" size="xs" fw={700} tt="uppercase">{t('totalDays')}</Text>
-                                <Text fw={700} size="xl">{totalCompleted}</Text>
+                            <div style={{ flex: 1 }}>
+                                <Text c="dimmed" size="xs" fw={600} tt="uppercase" style={{ lineHeight: 1.2 }}>
+                                    {t('totalDays')}
+                                </Text>
+                                <Text fw={700} size="xl" mt={4}>
+                                    {totalCompleted}
+                                </Text>
                             </div>
                         </Group>
                     </Paper>
 
                     <Paper withBorder p="md" radius="md">
-                        <Group>
+                        <Group wrap="nowrap" align="flex-start">
                             <ThemeIcon color="orange" variant="light" size="lg" radius="md">
                                 <IconFlame size={20} />
                             </ThemeIcon>
-                            <div>
-                                <Text c="dimmed" size="xs" fw={700} tt="uppercase">{t('bestStreak')}</Text>
-                                <Text fw={700} size="xl">
-                                    {/* Пока просто заглушка, расчет стриков добавим позже, если нужно */}
+                            <div style={{ flex: 1 }}>
+                                <Text c="dimmed" size="xs" fw={600} tt="uppercase" style={{ lineHeight: 1.2 }}>
+                                    {t('bestStreak')}
+                                </Text>
+                                <Text fw={700} size="xl" mt={4}>
                                     0
                                 </Text>
                             </div>
                         </Group>
                     </Paper>
                 </SimpleGrid>
+
             </Stack>
         </Container>
     );

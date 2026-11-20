@@ -12,7 +12,7 @@
   "import": "Импорт",
   "doneToday": "Сегодня готово",
   "notDone": "Не отмечено",
-  "totalDays": "Всего: {{count}} дн.",
+  "totalDays": "Всего дней.",
   "streak": "{{count}} дн. подряд",
   "editHabit": "Редактировать привычку",
   "deleteHabit": "Удалить привычку?",
