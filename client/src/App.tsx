@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import { HabitsProvider, useHabitsContext } from "./context/HabitsContext";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { AnimatePresence } from 'framer-motion';
+import { PageTransition } from './components/PageTransition';
 import { SettingsPage } from "./pages/SettingsPage";
+import { StatsPage } from './pages/StatsPage';
+import { OnboardingPage } from './pages/OnboardingPage';
+import { BottomNav } from './components/BottomNav';
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "./lib/supabase";
 import { AuthScreen } from "./components/AuthScreen";
@@ -38,8 +43,6 @@ import { Notifications } from "@mantine/notifications";
 import { HabitForm } from "./components/HabitForm";
 import { HabitCard } from "./components/HabitCard";
 import { MonthCalendar } from "./components/MonthCalendar";
-import { StatsCard } from "./components/StatsCard";
-import { getMonthlyStats } from "./lib/stats";
 import type { Habit, NewHabit } from "./types/habit";
 
 const theme = createTheme({
@@ -60,9 +63,24 @@ const theme = createTheme({
   primaryColor: "blue",
 });
 
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><AppContent /></PageTransition>} />
+        <Route path="/stats" element={<PageTransition><StatsPage /></PageTransition>} />
+        <Route path="/settings" element={<PageTransition><SettingsPage /></PageTransition>} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
 
   useEffect(() => {
     // Проверяем сессию при загрузке
@@ -70,7 +88,6 @@ export default function App() {
       setSession(session);
       setIsLoading(false);
     });
-
     // Подписываемся на изменения (вход/выход)
     const {
       data: { subscription },
@@ -81,23 +98,37 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (session?.user?.id) {
+      const seen = localStorage.getItem(`hasSeenOnboarding_${session.user.id}`) === 'true';
+      setHasSeenOnboarding(seen);
+    } else {
+      setHasSeenOnboarding(false);
+    }
+  }, [session]);
+
   return (
     <MantineProvider theme={theme} defaultColorScheme="auto">
       <Notifications position="top-right" />
       <BrowserRouter>
         {isLoading ? (
-          <Center h="100vh">
-            <Loader />
-          </Center>
-        ) : session ? (
-          <HabitsProvider>
-            <Routes>
-              <Route path="/" element={<AppContent />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Routes>
-          </HabitsProvider>
-        ) : (
+          <Center h="100vh"><Loader /></Center>
+        ) : !session ? (
           <AuthScreen />
+        ) : !hasSeenOnboarding ? (
+          <OnboardingPage
+            onComplete={() => {
+              if (session?.user?.id) {
+                localStorage.setItem(`hasSeenOnboarding_${session.user.id}`, 'true');
+              }
+              setHasSeenOnboarding(true);
+            }}
+          />
+        ) : (
+          <HabitsProvider>
+            <AnimatedRoutes />
+            <BottomNav />
+          </HabitsProvider>
         )}
       </BrowserRouter>
     </MantineProvider>
@@ -167,7 +198,6 @@ function AppContent() {
     //importHabits,
   } = useHabitsContext();
 
-  const stats = getMonthlyStats(habits);
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
   const [deletingHabit, setDeletingHabit] = useState<Habit | null>(null);
   const [calendarHabitId, setCalendarHabitId] = useState<string | null>(null);
@@ -188,7 +218,7 @@ function AppContent() {
   };
 
   return (
-    <Container size="sm" py="xl">
+    <Container size="sm" py="xl" pb={100}>
       <Group justify="space-between" align="flex-end" mt="sm" mb="lg">
         <div>
           <Title order={1}>{t("appTitle")}</Title>
@@ -208,12 +238,12 @@ function AppContent() {
               size="lg"
               aria-label={t("settings")}
               onClick={() => navigate("/settings")}
+              visibleFrom="sm"
             >
               <IconSettings size={20} />
             </ActionIcon>
           </Tooltip>
 
-          {/* 👇 ДОБАВЬТЕ ЭТОТ БЛОК 👇 */}
           <Tooltip label={t("logout")}>
             <ActionIcon
               variant="light"
@@ -233,13 +263,7 @@ function AppContent() {
 
       <Divider my="xl" />
 
-      {!loading && habits.length > 0 && (
-        <StatsCard
-          completed={stats.completed}
-          total={stats.total}
-          percentage={stats.percentage}
-        />
-      )}
+
 
       <Stack>
         {loading ? (

@@ -143,7 +143,7 @@ export function SettingsPage() {
   }
 
   return (
-    <Container size="sm" py="xl">
+    <Container size="sm" py="xl" pb={100}>
       <Group mb="lg" gap="sm">
         <ActionIcon
           variant="default"
