@@ -88,80 +88,78 @@ export function Heatmap({ habits }: HeatmapProps) {
     };
 
     return (
-        <ScrollArea type="never" style={{ width: '100%' }}>
-            <Box style={{ display: 'inline-block', minWidth: 'max-content' }} p="xs">
-                {/* Единая сетка */}
-                <Group gap={2} align="flex-start" wrap="nowrap">
+        <Box>
+            <ScrollArea type="never" style={{ width: '100%' }}>
+                <Box style={{ display: 'inline-block', minWidth: 'max-content' }} p="xs">
+                    {/* Единая сетка */}
+                    <Group gap={2} align="flex-start" wrap="nowrap">
 
-                    {/* Левая колонка: Дни недели */}
-                    <Box style={{ display: 'flex', flexDirection: 'column', gap: 2, width: 26 }}>
-                        {/* Пустое место под названия месяцев */}
-                        <Box h={16} />
-                        {Array.from({ length: 7 }).map((_, i) => (
-                            <Box key={i} h={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                                {(i === 0 || i === 2 || i === 4) && (
-                                    <Text size="10px" c="dimmed" style={{ lineHeight: 1 }}>
-                                        {i === 0 ? t('dayMon') : i === 2 ? t('dayWed') : t('dayFri')}
-                                    </Text>
-                                )}
-                            </Box>
-                        ))}
-                    </Box>
-
-                    {/* Колонки с неделями */}
-                    {weeks.map((week, wIndex) => {
-                        const ml = monthLabels.find((m) => m.index === wIndex);
-
-                        // Защита от наезжания месяцев: показываем, только если прошло 2+ недели
-                        const prevMl = monthLabels.find((m) => m.index === wIndex - 1);
-                        const showLabel = ml && (!prevMl || (ml.index - prevMl.index >= 2));
-
-                        return (
-                            <Box key={wIndex} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                {/* Место под месяц */}
-                                <Box h={16} style={{ position: 'relative' }}>
-                                    {showLabel && (
-                                        <Text
-                                            size="10px"
-                                            c="dimmed"
-                                            style={{
-                                                position: 'absolute',
-                                                bottom: 4,
-                                                left: 0,
-                                                whiteSpace: 'nowrap',
-                                                lineHeight: 1,
-                                            }}
-                                        >
-                                            {ml.month}
+                        {/* Левая колонка: Дни недели */}
+                        <Box style={{ display: 'flex', flexDirection: 'column', gap: 2, width: 26 }}>
+                            <Box h={16} />
+                            {Array.from({ length: 7 }).map((_, i) => (
+                                <Box key={i} h={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                    {(i === 0 || i === 2 || i === 4) && (
+                                        <Text size="10px" c="dimmed" style={{ lineHeight: 1 }}>
+                                            {i === 0 ? t('dayMon') : i === 2 ? t('dayWed') : t('dayFri')}
                                         </Text>
                                     )}
                                 </Box>
+                            ))}
+                        </Box>
 
-                                {/* Квадратики дней */}
-                                {week.map((day, dIndex) => (
-                                    <Tooltip
-                                        key={dIndex}
-                                        label={`${day.date.toLocaleDateString(i18n.language, { month: 'short', day: 'numeric', year: 'numeric' })}: ${t('habitsCount', { count: day.count })}`}
-                                        withArrow
-                                        position="top"
-                                        openDelay={100}
-                                    >
-                                        <Box
-                                            w={12}
-                                            h={12}
-                                            style={{
-                                                backgroundColor: getColor(day.count),
-                                                borderRadius: 2,
-                                                cursor: 'pointer',
-                                            }}
-                                        />
-                                    </Tooltip>
-                                ))}
-                            </Box>
-                        );
-                    })}
-                </Group>
-            </Box>
-        </ScrollArea>
-    );
+                        {/* Колонки с неделями */}
+                        {weeks.map((week, wIndex) => {
+                            const ml = monthLabels.find((m) => m.index === wIndex);
+                            const prevMl = monthLabels.find((m) => m.index === wIndex - 1);
+                            const showLabel = ml && (!prevMl || (ml.index - prevMl.index >= 2));
+
+                            return (
+                                <Box key={wIndex} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                    <Box h={16} style={{ position: 'relative' }}>
+                                        {showLabel && (
+                                            <Text
+                                                size="10px"
+                                                c="dimmed"
+                                                style={{ position: 'absolute', bottom: 4, left: 0, whiteSpace: 'nowrap', lineHeight: 1 }}
+                                            >
+                                                {ml.month}
+                                            </Text>
+                                        )}
+                                    </Box>
+
+                                    {week.map((day, dIndex) => (
+                                        <Tooltip
+                                            key={dIndex}
+                                            label={`${day.date.toLocaleDateString(i18n.language, { month: 'short', day: 'numeric', year: 'numeric' })}: ${t('habitsCount', { count: day.count })}`}
+                                            withArrow
+                                            position="top"
+                                            openDelay={100}
+                                        >
+                                            <Box
+                                                w={12}
+                                                h={12}
+                                                style={{ backgroundColor: getColor(day.count), borderRadius: 2, cursor: 'pointer' }}
+                                            />
+                                        </Tooltip>
+                                    ))}
+                                </Box>
+                            );
+                        })}
+                    </Group>
+                </Box>
+            </ScrollArea>
+
+            {/* 👇 Легенда цветов 👇 */}
+            <Group justify="flex-end" mt="md" gap="xs" pr="xs">
+                <Text size="xs" c="dimmed">{t('less')}</Text>
+                <Box w={12} h={12} style={{ backgroundColor: 'var(--mantine-color-gray-2)', borderRadius: 2 }} />
+                <Box w={12} h={12} style={{ backgroundColor: 'var(--mantine-color-blue-2)', borderRadius: 2 }} />
+                <Box w={12} h={12} style={{ backgroundColor: 'var(--mantine-color-blue-4)', borderRadius: 2 }} />
+                <Box w={12} h={12} style={{ backgroundColor: 'var(--mantine-color-blue-6)', borderRadius: 2 }} />
+                <Box w={12} h={12} style={{ backgroundColor: 'var(--mantine-color-blue-8)', borderRadius: 2 }} />
+                <Text size="xs" c="dimmed">{t('more')}</Text>
+            </Group>
+        </Box>
+    )
 }

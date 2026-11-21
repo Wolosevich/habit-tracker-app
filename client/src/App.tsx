@@ -35,6 +35,7 @@ import {
   IconMoon,
   IconSettings,
   IconLogout,
+  IconChartPie
 } from "@tabler/icons-react";
 import { useTranslation, Trans } from "react-i18next";
 import "@mantine/dates/styles.css";
@@ -195,7 +196,6 @@ function AppContent() {
     toggleToday,
     toggleDate,
     updateHabit,
-    //importHabits,
   } = useHabitsContext();
 
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
@@ -230,6 +230,19 @@ function AppContent() {
         <Group gap="xs">
           <LanguageToggle />
           <ThemeToggle />
+
+          <Tooltip label={t('statistics')}>
+            <ActionIcon
+              variant="light"
+              color="blue"
+              size="lg"
+              aria-label={t('statistics')}
+              onClick={() => navigate('/stats')}
+              visibleFrom="sm"
+            >
+              <IconChartPie size={20} />
+            </ActionIcon>
+          </Tooltip>
 
           <Tooltip label={t("settings")}>
             <ActionIcon
