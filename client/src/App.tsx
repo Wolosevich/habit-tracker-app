@@ -34,7 +34,6 @@ import {
   IconSun,
   IconMoon,
   IconSettings,
-  IconLogout,
   IconChartPie
 } from "@tabler/icons-react";
 import { useTranslation, Trans } from "react-i18next";
@@ -257,16 +256,7 @@ function AppContent() {
             </ActionIcon>
           </Tooltip>
 
-          <Tooltip label={t("logout")}>
-            <ActionIcon
-              variant="light"
-              color="red"
-              size="lg"
-              onClick={() => supabase.auth.signOut()}
-            >
-              <IconLogout size={20} />
-            </ActionIcon>
-          </Tooltip>
+
         </Group>
       </Group>
 

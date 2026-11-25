@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from '../lib/supabase';
 import {
   Container,
   Group,
@@ -20,6 +21,7 @@ import {
   IconClock,
   IconDownload,
   IconUpload,
+  IconLogout
 } from "@tabler/icons-react";
 import { TimeInput } from "@mantine/dates";
 import { notifications } from "@mantine/notifications";
@@ -41,6 +43,13 @@ export function SettingsPage() {
   const { colorScheme, setColorScheme } = useMantineColorScheme();
 
   const { habits, importHabits } = useHabitsContext();
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setEmail(data.user?.email || null);
+    });
+  }, []);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // --- Состояния для темы и языка ---
@@ -157,6 +166,34 @@ export function SettingsPage() {
       </Group>
 
       <Stack gap="lg">
+
+        {/* Блок: Аккаунт */}
+        <Paper withBorder p="md" radius="md">
+          <Text fw={500} mb="sm">{t('account')}</Text>
+          <Group justify="space-between" wrap="nowrap" align="center">
+            <Text
+              size="sm"
+              fw={500}
+              style={{
+                textOverflow: 'ellipsis',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                flex: 1
+              }}
+            >
+              {email || '...'}
+            </Text>
+            <Button
+              variant="light"
+              color="red"
+              leftSection={<IconLogout size={16} />}
+              onClick={() => supabase.auth.signOut()}
+            >
+              {t('logout')}
+            </Button>
+          </Group>
+        </Paper>
+
         {/* Блок 1: Внешний вид (Тема) */}
         <Paper withBorder p="md" radius="md">
           <Text fw={500} mb="sm">

@@ -57,6 +57,8 @@
   "loginBtn": "Sign In",
   "registerBtn": "Sign Up",
   "loginTab": "Login",
+  "account": "Account",
+  "email": "Email",
   "registerTab": "Register",
   "authError": "Auth error",
   "authSuccess": "Successfully logged in!",
